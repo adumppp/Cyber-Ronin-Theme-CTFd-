@@ -1,0 +1,13 @@
+{
+  "assets/js/index.js": {
+    "file": "assets/index-Cirpku_C.js",
+    "name": "index",
+    "src": "assets/js/index.js",
+    "isEntry": true
+  },
+  "assets/scss/main.scss": {
+    "file": "assets/main-DvPgWLOJ.css",
+    "src": "assets/scss/main.scss",
+    "isEntry": true
+  }
+}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Forge Identity{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-3">鍛 — FORGE</p>
+    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-[#F5F2EB]">Forge your identity</h1>
+    <div class="brush-divider mt-8 w-1/2"></div>
+  </div>
+
+  <div class="mt-10 max-w-2xl">
+    <div class="bg-[#121215] border border-white/10 p-8 shadow-2xl">
+      <div id="settings-infos"></div>
+      {% with form = Forms.self.SettingsForm(language=language, country=country) %}
+      <form method="post" id="settings-form" accept-charset="utf-8" autocomplete="off" role="form">
+        <div class="mb-6">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Warrior Name</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">名</span>
+            {{ form.name(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", id="set-name", value=name) }}
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Spirit Link</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">郵</span>
+            {{ form.email(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", id="set-email", value=email) }}
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Current Secret</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">秘</span>
+            <input type="password" id="set-confirm" placeholder="Current password" autocomplete="current-password"
+              class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0" />
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">New Secret</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">新</span>
+            <input type="password" id="set-password" placeholder="Leave blank to keep" autocomplete="new-password"
+              class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0" />
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Affiliation</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">属</span>
+            {{ form.affiliation(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", id="set-affiliation", value=affiliation or "", placeholder="Your clan") }}
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Website</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">網</span>
+            {{ form.website(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", id="set-website", value=website or "", placeholder="https://") }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn-slash w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-4 transition-colors duration-300 flex items-center justify-center gap-2">
+          <span class="font-kanji">刀</span> Strike — Reforge
+        </button>
+      </form>
+      {% endwith %}
+    </div>
+  </div>
+</main>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("settings-form");
+    if (!form) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const infos = document.getElementById("settings-infos");
+      const payload = {
+        name: document.getElementById("set-name")?.value,
+        email: document.getElementById("set-email")?.value,
+        affiliation: document.getElementById("set-affiliation")?.value,
+        website: document.getElementById("set-website")?.value,
+      };
+      const confirm = document.getElementById("set-confirm")?.value;
+      const password = document.getElementById("set-password")?.value;
+      if (confirm) payload.confirm = confirm;
+      if (password) payload.password = password;
+
+      try {
+        const resp = await fetch("/api/v1/users/me", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (data.success) {
+          if (infos) infos.innerHTML = '<div class="mb-6 border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-mono2 text-xs px-4 py-3">Identity reforged. The blade is sharper now.</div>';
+        } else {
+          const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "The forge rejected your strike.";
+          if (infos) infos.innerHTML = `<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">${msgs}</div>`;
+        }
+      } catch (err) {
+        if (infos) infos.innerHTML = '<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">Submission failed — check your connection.</div>';
+      }
+    });
+  });
+</script>
+{% endblock %}

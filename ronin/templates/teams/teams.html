@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Clans{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-3">隊 — THE CLANS</p>
+    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-[#F5F2EB]">All who gather</h1>
+    <div class="brush-divider mt-8 w-1/2"></div>
+  </div>
+
+  <div class="reveal mt-10">
+    <div class="border border-white/10 bg-[#121215] overflow-x-auto shadow-xl">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Rank</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Crest</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Clan</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Warriors</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Honor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for team in teams.items %}
+          <tr class="border-b border-white/5 transition-colors hover:bg-[#1A1A1E] {{ 'bg-[#E63946]/5 border-l-2 border-l-[#E63946]' if team.id == Team.id else '' }}">
+            <td class="px-6 py-4">
+              <span class="font-heading text-lg font-black {{ 'text-[#D4AF37]' if team.place and (team.place | int) <= 3 else 'text-[#71717A]' }}">{{ "%02d" | format((team.place or loop.index) | int) }}</span>
+            </td>
+            <td class="px-6 py-4"><span class="font-kanji text-xl text-[#E63946]/80">{{ team.name[0] }}</span></td>
+            <td class="px-6 py-4">
+              <a href="{{ url_for('teams.public', team_id=team.id) }}" class="font-heading text-sm font-bold tracking-wide text-[#F5F2EB] hover:text-[#E63946] transition-colors">
+                {{ team.name }}
+              </a>
+              {% if team.id == Team.id %}<span class="font-mono2 text-[9px] tracking-widest text-[#E63946] ml-2 uppercase">Your Clan</span>{% endif %}
+            </td>
+            <td class="px-6 py-4 font-mono2 text-sm text-[#A1A1AA]">{{ team.members | length }}</td>
+            <td class="px-6 py-4 font-mono2 text-sm font-bold text-[#F5F2EB]">{{ team.score or 0 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!-- This template is used by CTFd's challenge plugin system -->
+<!-- The challenge content is rendered server-side and injected into the modal -->
+
+<div class="challenge-modal-inner relative bg-[#121215] border border-[rgba(230,57,70,0.4)] text-[#F5F2EB] w-full max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto modal-scroll p-6 sm:p-8 shadow-2xl">
+  <button onclick="closeChallengeModal()" class="absolute top-4 right-4 text-[#71717A] hover:text-[#E63946] font-mono2 text-lg transition-colors">✕</button>
+  
+  <div class="flex items-center gap-3 mb-2">
+    <span class="font-kanji text-3xl text-[#E63946]">試</span>
+    <div class="flex gap-2 flex-wrap">
+      <span class="font-mono2 text-[10px] tracking-[0.25em] uppercase px-2.5 py-1 border text-[#E63946] border-[#E6394655]">{{ challenge.category }}</span>
+    </div>
+  </div>
+  
+  <h2 class="font-heading text-2xl font-bold text-[#F5F2EB] tracking-wide">{{ challenge.name }}</h2>
+  <div class="text-[#A1A1AA] text-sm leading-relaxed pt-2">{{ challenge.description | safe }}</div>
+  
+  <div class="flex items-center gap-8 border-y border-white/5 py-3 my-4">
+    <div>
+      <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Honor</p>
+      <p class="font-heading text-xl font-bold text-[#D4AF37]">{{ challenge.value }} PTS</p>
+    </div>
+    <div>
+      <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Victories</p>
+      <p class="font-heading text-xl font-bold text-[#F5F2EB]">{{ challenge.solves }}</p>
+    </div>
+  </div>
+
+  {% if challenge.hints %}
+  <div class="mb-6">
+    <div id="hint-section">
+      <button onclick="revealHint(this)" class="font-mono2 text-[11px] tracking-widest text-[#71717A] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
+        <span class="font-kanji">灯</span> REVEAL HINT
+      </button>
+      <div class="hidden fade-in font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed mt-2">
+        <span class="font-kanji mr-2">灯</span>{{ challenge.hints[0].content | safe }}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div id="flag-submission-area">
+    <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+      <span class="font-mono2 text-xs text-[#E63946] pl-4 pr-2 whitespace-nowrap select-none">ronin@ctf:~#</span>
+      <input id="challenge-flag-input" type="text" placeholder="ronin{...}" spellcheck="false"
+        class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0" />
+      <span class="caret-blink w-2 h-4 bg-[#E63946]/70 mr-3"></span>
+    </div>
+    <button onclick="submitChallengeFlag({{ challenge.id }})" class="btn-slash mt-3 w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-3.5 transition-colors duration-300 flex items-center justify-center gap-2">
+      <span class="font-kanji">刀</span> Strike — Submit Flag
+    </button>
+    <div id="flag-error" class="hidden font-mono2 text-xs text-[#EF4444] mt-2">Incorrect flag. The shadow ledger records your miss.</div>
+  </div>
+</div>

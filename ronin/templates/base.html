@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{% block title %}{% endblock %}{% if self.title() %} — {% endif %}{{ Configs.ctf_name }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ Session.nonce }}">
+  <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&family=Noto+Serif+JP:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['Cinzel', 'Noto Serif JP', 'serif'],
+            kanji: ['Noto Serif JP', 'serif'],
+            mono2: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    #splash-intro { position: fixed; inset: 0; z-index: 100; background: #09090B; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #splash-intro.slashed { opacity: 0; pointer-events: none; }
+  </style>
+
+  {% block stylesheets %}
+    {{ Assets.css("assets/scss/main.scss") }}
+  {% endblock %}
+
+  {{ Plugins.styles }}
+
+  <script type="text/javascript">
+      window.init = {
+          'urlRoot': "{{ request.script_root }}",
+          'csrfNonce': "{{ Session.nonce }}",
+          'userMode': "{{ Configs.user_mode }}",
+          'userId': {{ Session.id or 'null' }},
+          'userName': {{ User.name | tojson }},
+          'userEmail': {{ User.email | tojson }},
+          'userVerified': {{ User.verified | tojson }},
+          'teamId': {{ Team.id | tojson }},
+          'teamName': {{ Team.name | tojson }},
+          'start': {{ Configs.start | tojson }},
+          'end': {{ Configs.end | tojson }},
+          'themeSettings': {{ Configs.theme_settings | tojson }},
+      }
+  </script>
+
+  {{ Configs.theme_header }}
+</head>
+<body class="bg-[#09090b] text-[#F5F2EB]">
+  <div class="grain-overlay"></div>
+
+  {% include "components/navbar.html" %}
+
+  <main role="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-white/5 bg-[#0c0c0f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="font-kanji text-xl font-black text-[#D4AF37]">浪人</span>
+        <span class="font-heading text-xs font-bold tracking-[0.35em] text-[#F5F2EB]">RONIN</span>
+      </div>
+      <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]">
+        {% trans %}Powered by{% endtrans %} <a href="https://ctfd.io" class="text-[#E63946] hover:text-[#FF4D5E] transition-colors">CTFd</a>
+      </p>
+      <p class="font-kanji text-xs text-[#71717A]/60">主無き物、コードで切る</p>
+    </div>
+  </footer>
+
+  {% block scripts %}
+    {{ Assets.js("assets/js/index.js", type=None, defer=True) }}
+  {% endblock %}
+
+  {{ Plugins.scripts }}
+  {{ Configs.theme_footer }}
+</body>
+</html>

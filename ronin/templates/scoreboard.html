@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Honor Scroll{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-3">番付 — THE HONOR SCROLL</p>
+    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-[#F5F2EB]">Shadow ledger</h1>
+    <p class="mt-4 text-[#A1A1AA] text-sm sm:text-base max-w-xl leading-relaxed">Every victory recorded in blood-red ink. The scroll does not forget, and it does not forgive.</p>
+    <div class="brush-divider mt-8 w-1/2"></div>
+  </div>
+
+  <!-- Tabs: Teams / Players -->
+  <div class="reveal mt-10 flex items-center gap-2">
+    <button id="tab-teams" onclick="switchBoard('teams')" class="tab-btn font-heading text-xs font-bold tracking-[0.25em] uppercase px-5 py-3 border transition-all duration-300 bg-[#E63946] text-white border-[#E63946]">一族 — Teams</button>
+    <button id="tab-players" onclick="switchBoard('players')" class="tab-btn font-heading text-xs font-bold tracking-[0.25em] uppercase px-5 py-3 border transition-all duration-300 bg-[#121215] text-[#71717A] border-white/10 hover:text-[#F5F2EB]">武者 — Players</button>
+  </div>
+
+  <!-- Podium (Teams) -->
+  <div id="podium" class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+    <!-- Populated by JS from /api/v1/scoreboard -->
+  </div>
+
+  <!-- Scoreboard Table -->
+  <div class="reveal mt-12">
+    <div class="border border-white/10 bg-[#121215] overflow-x-auto shadow-xl">
+      <table class="w-full min-w-[720px]">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Rank</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Crest</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Name</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Hierarchy</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4" id="col-victories">Victories</th>
+            <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-6 py-4">Honor</th>
+          </tr>
+        </thead>
+        <tbody id="scoreboard-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+    <p class="font-mono2 text-[9px] tracking-[0.25em] uppercase text-[#71717A]/70 mt-4 leading-relaxed">
+      位 — 天皇 Tenno: the reigning #1, one holder only &gt; 将軍 Shogun (66%+) &gt; 大名 Daimyo (41–65%) &gt; 侍 Samurai (21–40%) &gt; 農民 Peasant (0–20%)
+    </p>
+  </div>
+
+  <!-- Tournament Pulse -->
+  <div class="reveal mt-16">
+    <div class="bg-[#121215] border border-white/10 p-6 lg:p-8">
+      <div class="flex items-baseline justify-between mb-6">
+        <h2 class="font-heading text-xl sm:text-2xl font-semibold tracking-wide text-[#F5F2EB]">Tournament pulse</h2>
+        <span class="font-mono2 text-[10px] tracking-[0.3em] text-[#71717A] uppercase">Score progression</span>
+      </div>
+      <div id="tournament-pulse" class="h-72"></div>
+    </div>
+  </div>
+</main>
+{% endblock %}

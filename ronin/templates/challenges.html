@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Trials{% endblock %}
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-3">試練 — TRIALS OF THE BLADE</p>
+    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-[#F5F2EB]">Choose your duel</h1>
+    <p class="mt-4 text-[#A1A1AA] text-sm sm:text-base max-w-xl leading-relaxed">
+      Sacred trials across five disciplines. Each flag captured is recorded in blood-red ink upon the shadow ledger.
+    </p>
+    <div class="brush-divider mt-8 w-1/2"></div>
+  </div>
+
+  <!-- Category Tabs -->
+  <div class="mt-10 flex flex-wrap gap-1 border-b border-white/5">
+    <button onclick="setCategory('all')" data-cat="all" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2 active">
+      <span class="font-kanji text-sm text-[#71717A]">全</span>
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#F5F2EB]">All Trials</span>
+      <span class="cat-indicator absolute bottom-0 left-2 right-2 h-[2px] bg-[#E63946]"></span>
+    </button>
+    <button onclick="setCategory('web')" data-cat="web" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2">
+      <span class="font-kanji text-sm text-[#E63946]">蜘蛛</span>
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#71717A] hover:text-[#A1A1AA] transition-colors">Web</span>
+    </button>
+    <button onclick="setCategory('crypto')" data-cat="crypto" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2">
+      <span class="font-kanji text-sm text-[#D4AF37]">暗号</span>
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#71717A] hover:text-[#A1A1AA] transition-colors">Crypto</span>
+    </button>
+    <button onclick="setCategory('pwn')" data-cat="pwn" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2">
+      <span class="font-kanji text-sm text-[#8B5CF6]">刀切</span>
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#71717A] hover:text-[#A1A1AA] transition-colors">Pwn</span>
+    </button>
+    <button onclick="setCategory('forensics')" data-cat="forensics" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2">
+      <span class="font-kanji text-sm text-[#06B6D4]">影</span>
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#71717A] hover:text-[#A1A1AA] transition-colors">Forensics</span>
+    </button>
+    <button onclick="setCategory('reversing')" data-cat="reversing" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2">
+      <span class="font-kanji text-sm text-[#10B981]">解体</span>
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#71717A] hover:text-[#A1A1AA] transition-colors">Reversing</span>
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="mt-6 flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
+    <div class="flex flex-wrap gap-2">
+      <button onclick="setDifficulty('all')" data-diff="all" class="diff-btn font-mono2 text-[10px] tracking-[0.2em] uppercase px-3.5 py-2 border border-[rgba(230,57,70,0.5)] bg-[#E63946]/10 text-[#F5F2EB] transition-all">All Ranks</button>
+      <button onclick="setDifficulty('ashigaru')" data-diff="ashigaru" class="diff-btn font-mono2 text-[10px] tracking-[0.2em] uppercase px-3.5 py-2 border border-white/10 text-[#71717A] hover:text-[#A1A1AA] hover:border-white/20 transition-all">Ashigaru</button>
+      <button onclick="setDifficulty('chunin')" data-diff="chunin" class="diff-btn font-mono2 text-[10px] tracking-[0.2em] uppercase px-3.5 py-2 border border-white/10 text-[#71717A] hover:text-[#A1A1AA] hover:border-white/20 transition-all">Chunin</button>
+      <button onclick="setDifficulty('hatamoto')" data-diff="hatamoto" class="diff-btn font-mono2 text-[10px] tracking-[0.2em] uppercase px-3.5 py-2 border border-white/10 text-[#71717A] hover:text-[#A1A1AA] hover:border-white/20 transition-all">Hatamoto</button>
+      <button onclick="setDifficulty('shogun')" data-diff="shogun" class="diff-btn font-mono2 text-[10px] tracking-[0.2em] uppercase px-3.5 py-2 border border-white/10 text-[#71717A] hover:text-[#A1A1AA] hover:border-white/20 transition-all">Shogun</button>
+    </div>
+    <div class="flex items-center gap-3 border border-white/10 bg-[#121215] px-4 py-2.5 w-full sm:w-72 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+      <span class="font-kanji text-[#71717A] text-sm">探</span>
+      <input id="challenge-search" type="text" placeholder="Search trials..." spellcheck="false"
+        class="bg-transparent font-mono2 text-xs text-[#F5F2EB] placeholder:text-[#71717A]/60 outline-none w-full" />
+    </div>
+  </div>
+
+  <!-- Challenge Grid -->
+  <div id="challenges-grid" class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Populated by JS -->
+  </div>
+
+  <div id="no-challenges" class="hidden mt-20 text-center">
+    <p class="font-kanji text-4xl text-[#71717A]/40">空</p>
+    <p class="font-mono2 text-xs tracking-widest text-[#71717A] mt-4 uppercase">No trials match your stance</p>
+  </div>
+</section>
+
+<!-- Challenge Modal -->
+<div id="challenge-modal-container"></div>
+{% endblock %}

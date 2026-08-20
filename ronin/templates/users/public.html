@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }}{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <div class="flex flex-col md:flex-row md:items-end gap-8">
+      <div class="relative w-28 h-28 shrink-0">
+        <div class="absolute -inset-2 border border-[rgba(230,57,70,0.35)] rotate-3"></div>
+        <div class="w-full h-full bg-[#121215] clip-frame flex items-center justify-center">
+          <span class="font-kanji text-5xl text-[#E63946]/30">{{ user.name[0] }}</span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-2">武者 — WARRIOR</p>
+        <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#F5F2EB] flex items-center gap-4 flex-wrap">
+          {{ user.name }}<span class="font-kanji text-3xl text-[#E63946]">浪</span>
+        </h1>
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+          {% if user.team_id %}
+          <a href="{{ url_for('teams.public', team_id=user.team_id) }}" class="font-mono2 text-[10px] tracking-widest uppercase text-[#F5F2EB] border border-[rgba(212,175,55,0.4)] bg-[#D4AF37]/10 text-[#D4AF37] px-2.5 py-1 hover:bg-[#D4AF37]/20 transition-colors">
+            <span class="font-kanji mr-1">族</span>{{ user.team.name }}
+          </a>
+          {% endif %}
+          {% if user.oauth_id %}
+          <a href="https://majorleaguecyber.org/u/{{ user.name }}" target="_blank" rel="noopener" class="font-mono2 text-[10px] tracking-widest uppercase border border-[rgba(6,182,212,0.4)] bg-[#06B6D4]/10 text-[#06B6D4] px-2.5 py-1 hover:bg-[#06B6D4]/20 transition-colors">Official</a>
+          {% endif %}
+          {% if user.affiliation %}
+          <span class="font-mono2 text-[10px] tracking-widest uppercase border border-white/15 bg-white/5 text-[#A1A1AA] px-2.5 py-1">{{ user.affiliation }}</span>
+          {% endif %}
+          {% if user.country %}
+          <span class="font-mono2 text-[10px] tracking-widest uppercase border border-white/15 bg-white/5 text-[#A1A1AA] px-2.5 py-1">{{ lookup_country_code(user.country) }}</span>
+          {% endif %}
+          {% if user.bracket_id %}
+          <span class="font-mono2 text-[10px] tracking-widest uppercase border border-[rgba(230,57,70,0.3)] bg-[#E63946]/10 text-[#E63946] px-2.5 py-1">{{ user.bracket.name }}</span>
+          {% endif %}
+        </div>
+        {% for field in user.fields %}
+        <p class="font-mono2 text-[10px] tracking-widest uppercase text-[#71717A] mt-2">{{ field.name }}: <span class="text-[#A1A1AA]">{{ field.value }}</span></p>
+        {% endfor %}
+        {% if user.website %}
+        <a href="{{ user.website }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-widest uppercase text-[#E63946] hover:text-[#FF4D5E] mt-2 transition-colors">
+          <span class="font-kanji">鏈</span> {{ user.website.replace('https://','').replace('http://','').split('/')[0] }}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="brush-divider mt-10 w-2/3"></div>
+  </div>
+
+  {% if account.place %}
+  <div class="reveal mt-8 flex items-center gap-8">
+    <div>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">Place</p>
+      <p class="font-heading text-2xl font-black text-[#D4AF37]">{{ account.place }}</p>
+    </div>
+    <div class="w-px h-10 bg-white/10"></div>
+    <div>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">Points</p>
+      <p class="font-heading text-2xl font-black text-[#F5F2EB]">{{ account.score }}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- My Clan -->
+  {% if user.team_id %}
+  <div class="reveal mt-10">
+    <div class="bg-[#121215] border border-[rgba(212,175,55,0.35)] p-6 lg:p-8">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="font-heading text-xl font-semibold tracking-wide text-[#F5F2EB]">我が一族 — My Clan</h2>
+          <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1">Sworn brotherhood</p>
+        </div>
+        <a href="{{ url_for('teams.public', team_id=user.team_id) }}" class="btn-slash inline-flex items-center gap-2 border border-[rgba(212,175,55,0.45)] text-[#D4AF37] hover:bg-[#D4AF37]/10 font-heading text-[11px] font-bold tracking-[0.25em] uppercase px-5 py-2.5 transition-colors duration-300">
+          <span class="font-kanji">族</span> View Clan
+        </a>
+      </div>
+      <div class="mt-6 flex flex-wrap items-center gap-8">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-[#0c0c0f] clip-frame flex items-center justify-center border border-[rgba(212,175,55,0.3)]">
+            <span class="font-kanji text-2xl text-[#D4AF37]/70">{{ user.team.name[0] }}</span>
+          </div>
+          <div>
+            <a href="{{ url_for('teams.public', team_id=user.team_id) }}" class="font-heading text-2xl font-black text-[#F5F2EB] hover:text-[#D4AF37] transition-colors">{{ user.team.name }}</a>
+            <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1">
+              {% if user.team.affiliation %}{{ user.team.affiliation }} • {% endif %}{{ user.team.members | length }} warriors
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {% for member in user.team.members %}
+          <a href="{{ url_for('users.public', user_id=member.id) }}" class="font-mono2 text-[10px] tracking-widest uppercase border border-white/10 bg-[#0c0c0f] text-[#A1A1AA] hover:text-[#E63946] hover:border-[rgba(230,57,70,0.4)] px-3 py-1.5 transition-colors">
+            <span class="font-kanji mr-1 text-[#E63946]/70">刀</span>{{ member.name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Stats Grid -->
+  <div class="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4" id="user-stats-grid">
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6">
+      <span class="font-kanji text-lg text-[#E63946]">杯</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4">
+        <span id="stat-score">{{ account.score or 0 }}</span><span class="text-sm font-semibold text-[#D4AF37] ml-1.5">PTS</span>
+      </p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Total Honor</p>
+    </div>
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6" style="transition-delay: 0.07s">
+      <span class="font-kanji text-lg text-[#E63946]">刀</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4">#{{ account.place or "—" }}</p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Global Rank</p>
+    </div>
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6" style="transition-delay: 0.14s">
+      <span class="font-kanji text-lg text-[#E63946]">的</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4" id="stat-solves">{{ user.solves | length }}</p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Trials Conquered</p>
+    </div>
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6" style="transition-delay: 0.21s">
+      <span class="font-kanji text-lg text-[#E63946]">敗</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4" id="stat-fails">0</p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Failed Strikes</p>
+    </div>
+  </div>
+
+  {% set solves = user.solves %}
+  {% set awards = user.awards %}
+
+  {% if solves or awards %}
+    <!-- Awards -->
+    {% if awards %}
+    <div class="reveal mt-12">
+      <h2 class="font-heading text-xl sm:text-2xl font-semibold tracking-wide text-[#F5F2EB]">功名 — Awards</h2>
+      <div class="brush-divider mt-4 w-1/3"></div>
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for award in awards %}
+        <div class="reveal border border-[rgba(212,175,55,0.35)] bg-[#121215] p-5 text-center">
+          <span class="font-kanji text-3xl text-[#D4AF37] block">{{ award.category or "章" }}</span>
+          <p class="font-heading text-sm font-bold tracking-widest uppercase mt-3 text-[#F5F2EB]">{{ award.name }}</p>
+          {% if award.description %}<p class="font-mono2 text-[9px] tracking-wider text-[#71717A] mt-1.5 leading-relaxed">{{ award.description }}</p>{% endif %}
+          <p class="font-mono2 text-xs font-bold text-[#D4AF37] mt-2">+{{ award.value }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Solves Table -->
+    <div class="reveal mt-12">
+      <div class="bg-[#121215] border border-white/10 p-6 lg:p-8">
+        <h2 class="font-heading text-lg font-semibold tracking-wide text-[#F5F2EB]">Shadow ledger — Solves</h2>
+        <div class="overflow-x-auto mt-6">
+          <table class="w-full min-w-[560px]">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-4 py-3">Trial</th>
+                <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-left px-4 py-3">Discipline</th>
+                <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-right px-4 py-3">Honor</th>
+                <th class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] text-right px-4 py-3">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for solve in solves %}
+              <tr class="border-b border-white/5 hover:bg-[#1A1A1E] transition-colors">
+                <td class="px-4 py-3">
+                  <a href="{{ url_for('challenges.listing') }}#{{ solve.challenge.name }}-{{ solve.challenge.id }}" class="font-heading text-sm font-bold tracking-wide text-[#F5F2EB] hover:text-[#E63946] transition-colors">{{ solve.challenge.name }}</a>
+                </td>
+                <td class="px-4 py-3 font-mono2 text-xs text-[#A1A1AA]">{{ solve.challenge.category }}</td>
+                <td class="px-4 py-3 font-mono2 text-xs font-bold text-[#D4AF37] text-right">+{{ solve.challenge.value }}</td>
+                <td class="px-4 py-3 font-mono2 text-xs text-[#71717A] text-right">{{ solve.date | isoformat }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Solve/Fail Ratio + Category Breakdown + Score Graph + Radar -->
+    <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="reveal lg:col-span-1">
+        <div class="bg-[#121215] border border-white/10 p-6 h-full">
+          <h2 class="font-heading text-lg font-semibold tracking-wide text-[#F5F2EB]">Strike rate</h2>
+          <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1 mb-4">Solves vs failed strikes</p>
+          <div class="h-2 w-full bg-white/5 overflow-hidden flex" id="solve-fail-bar">
+            <div id="solve-bar" class="h-full bg-emerald-500" style="width: 50%"></div>
+            <div id="fail-bar" class="h-full bg-[#E63946]" style="width: 50%"></div>
+          </div>
+          <div class="flex items-center gap-5 mt-4">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span class="font-mono2 text-[10px] tracking-widest uppercase text-[#A1A1AA]">Solves (<span id="solve-pct">—</span>%)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-[#E63946]"></span>
+              <span class="font-mono2 text-[10px] tracking-widest uppercase text-[#A1A1AA]">Fails (<span id="fail-pct">—</span>%)</span>
+            </div>
+          </div>
+          <div class="mt-6 h-2 w-full bg-white/5 overflow-hidden flex" id="category-bar"></div>
+          <div id="category-legend" class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4"></div>
+        </div>
+      </div>
+
+      <div class="reveal lg:col-span-2" style="transition-delay: 0.1s">
+        <div class="bg-[#121215] border border-white/10 p-6 lg:p-8 h-full">
+          <h2 class="font-heading text-lg font-semibold tracking-wide text-[#F5F2EB]">Honor progression</h2>
+          <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1 mb-4">Score over time</p>
+          <div id="user-score-graph" class="h-64"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal mt-6">
+      <div class="bg-[#121215] border border-white/10 p-6">
+        <h2 class="font-heading text-lg font-semibold tracking-wide text-[#F5F2EB]">Blade wheel</h2>
+        <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1 mb-4">Disciplines of the craft</p>
+        <div id="skills-radar" class="h-72 w-full"></div>
+      </div>
+    </div>
+  {% else %}
+    <div class="reveal mt-16">
+      <div class="border border-white/10 bg-[#121215] p-10 text-center">
+        <span class="font-kanji text-4xl text-[#71717A]/40 block mb-4">無</span>
+        <p class="font-heading text-lg font-bold tracking-widest uppercase text-[#71717A]">No victories recorded yet</p>
+        <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]/60 mt-2">The blade awaits its first strike</p>
+      </div>
+    </div>
+  {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    window.USER = {{ { 'type': 'user', 'id': user.id, 'name': user.name, 'account_id': user.id } | tojson }};
+  </script>
+  {{ super() }}
+{% endblock %}

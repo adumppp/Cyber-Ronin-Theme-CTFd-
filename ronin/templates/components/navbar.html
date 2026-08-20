@@ -1,0 +1,91 @@
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-[#09090B]/85 border-b border-red-950/40 px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all">
+  <a href="{{ request.script_root }}/" class="flex items-center gap-3 group">
+    <span class="torch-pulse text-[#E63946] font-kanji text-xl">炎</span>
+    <span class="font-kanji text-xl font-black text-[#D4AF37] leading-none">浪人</span>
+    <span class="font-heading text-sm font-bold tracking-[0.35em] text-[#F5F2EB] group-hover:text-[#E63946] transition-colors duration-300">RONIN</span>
+  </a>
+
+  <nav class="hidden md:flex items-center gap-1">
+    {% if Configs.challenge_visibility != "admins" or Session.type == "admin" %}
+    <a href="{{ url_for('challenges.listing') }}" class="relative px-4 py-2 group">
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase {% if request.endpoint == 'challenges.listing' %}text-[#F5F2EB]{% else %}text-[#71717A] group-hover:text-[#A1A1AA]{% endif %} transition-colors duration-300">Trials</span>
+      <span class="absolute -top-1 right-1 font-kanji text-[9px] {% if request.endpoint == 'challenges.listing' %}text-[#E63946]{% else %}text-[#71717A]/40{% endif %} transition-colors duration-300">試練</span>
+      {% if request.endpoint == 'challenges.listing' %}<span class="absolute bottom-0 left-3 right-3 h-px bg-[#E63946]"></span>{% endif %}
+    </a>
+    {% endif %}
+
+    {% if Configs.score_visibility != "admins" or Session.type == "admin" %}
+    <a href="{{ url_for('scoreboard.listing') }}" class="relative px-4 py-2 group">
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase {% if request.endpoint == 'scoreboard.listing' %}text-[#F5F2EB]{% else %}text-[#71717A] group-hover:text-[#A1A1AA]{% endif %} transition-colors duration-300">Honor Scroll</span>
+      <span class="absolute -top-1 right-1 font-kanji text-[9px] {% if request.endpoint == 'scoreboard.listing' %}text-[#E63946]{% else %}text-[#71717A]/40{% endif %} transition-colors duration-300">番付</span>
+      {% if request.endpoint == 'scoreboard.listing' %}<span class="absolute bottom-0 left-3 right-3 h-px bg-[#E63946]"></span>{% endif %}
+    </a>
+    {% endif %}
+
+    {% if Configs.user_mode == "teams" and Configs.team_visibility != "admins" %}
+    <a href="{{ url_for('teams.listing') }}" class="relative px-4 py-2 group">
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase {% if request.endpoint == 'teams.listing' %}text-[#F5F2EB]{% else %}text-[#71717A] group-hover:text-[#A1A1AA]{% endif %} transition-colors duration-300">Clans</span>
+      <span class="absolute -top-1 right-1 font-kanji text-[9px] {% if request.endpoint == 'teams.listing' %}text-[#E63946]{% else %}text-[#71717A]/40{% endif %} transition-colors duration-300">一族</span>
+      {% if request.endpoint == 'teams.listing' %}<span class="absolute bottom-0 left-3 right-3 h-px bg-[#E63946]"></span>{% endif %}
+    </a>
+    {% endif %}
+
+    {% if Configs.account_visibility != "admins" %}
+    <a href="{{ url_for('users.listing') }}" class="relative px-4 py-2 group">
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase {% if request.endpoint == 'users.listing' %}text-[#F5F2EB]{% else %}text-[#71717A] group-hover:text-[#A1A1AA]{% endif %} transition-colors duration-300">Warriors</span>
+      <span class="absolute -top-1 right-1 font-kanji text-[9px] {% if request.endpoint == 'users.listing' %}text-[#E63946]{% else %}text-[#71717A]/40{% endif %} transition-colors duration-300">武者</span>
+      {% if request.endpoint == 'users.listing' %}<span class="absolute bottom-0 left-3 right-3 h-px bg-[#E63946]"></span>{% endif %}
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="flex items-center gap-3">
+    {% if Session.id %}
+      {% if Team.id %}
+      <a href="{{ url_for('teams.private') }}" class="hidden sm:flex items-center gap-2 border border-[rgba(6,182,212,0.35)] bg-[#121215]/80 px-3.5 py-1.5 shadow-sm hover:border-[rgba(6,182,212,0.6)] transition-colors" title="My Clan">
+        <span class="font-kanji text-[#06B6D4] text-sm">族</span>
+        <span class="font-mono2 text-[11px] tracking-widest text-[#F5F2EB]">{{ Team.name }}</span>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('views.settings') }}" class="hidden sm:flex items-center gap-2 border border-[rgba(212,175,55,0.35)] bg-[#121215]/80 px-3.5 py-1.5 shadow-sm hover:border-[rgba(230,57,70,0.5)] transition-colors">
+        <span class="font-kanji text-[#E63946] text-sm">刀</span>
+        <span class="font-mono2 text-[11px] tracking-widest text-[#F5F2EB]">{{ User.name }}</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="hidden sm:inline font-mono2 text-[11px] tracking-widest text-[#71717A] hover:text-[#E63946] uppercase transition-colors" title="Logout">出</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="hidden sm:inline font-mono2 text-[11px] tracking-[0.2em] uppercase text-[#71717A] hover:text-[#F5F2EB] transition-colors">Enter</a>
+      <a href="{{ url_for('auth.register') }}" class="hidden sm:inline-flex items-center gap-2 bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-[11px] font-bold tracking-[0.25em] uppercase px-4 py-2 transition-colors duration-300">
+        <span class="font-kanji">刀</span> Join
+      </a>
+    {% endif %}
+
+    <button id="mobile-nav-toggle" class="md:hidden text-[#71717A] hover:text-[#F5F2EB] p-1.5 focus:outline-none">
+      <span class="font-kanji text-xl">☰</span>
+    </button>
+  </div>
+
+  <div id="mobile-nav-menu" class="hidden absolute top-full left-0 w-full bg-[#0d0d10] border-b border-red-950/40 p-4 md:hidden flex-col gap-2 shadow-2xl">
+    {% if Configs.challenge_visibility != "admins" or Session.type == "admin" %}
+    <a href="{{ url_for('challenges.listing') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Trials</span><span class="font-kanji text-sm text-[#E63946]">試練</span></a>
+    {% endif %}
+    {% if Configs.score_visibility != "admins" or Session.type == "admin" %}
+    <a href="{{ url_for('scoreboard.listing') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Honor Scroll</span><span class="font-kanji text-sm text-[#E63946]">番付</span></a>
+    {% endif %}
+    {% if Configs.user_mode == "teams" and Configs.team_visibility != "admins" %}
+    <a href="{{ url_for('teams.listing') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Clans</span><span class="font-kanji text-sm text-[#E63946]">一族</span></a>
+    {% endif %}
+    {% if Configs.account_visibility != "admins" %}
+    <a href="{{ url_for('users.listing') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Warriors</span><span class="font-kanji text-sm text-[#E63946]">武者</span></a>
+    {% endif %}
+    {% if Session.id %}
+      {% if Team.id %}
+      <a href="{{ url_for('teams.private') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>{{ Team.name }} (My Clan)</span><span class="font-kanji text-sm text-[#06B6D4]">族</span></a>
+      {% endif %}
+      <a href="{{ url_for('views.settings') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>{{ User.name }}</span><span class="font-kanji text-sm text-[#D4AF37]">鍛</span></a>
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Logout</span><span class="font-kanji text-sm text-[#E63946]">出</span></a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Enter</span><span class="font-kanji text-sm text-[#E63946]">入</span></a>
+      <a href="{{ url_for('auth.register') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-[#E63946]/30 bg-[#E63946]/10 text-[#F5F2EB]"><span>Join</span><span class="font-kanji text-sm text-[#E63946]">刀</span></a>
+    {% endif %}
+  </div>
+</header>

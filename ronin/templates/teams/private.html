@@ -1,0 +1,254 @@
+{% extends "teams/public.html" %}
+{% block title %}{{ team.name }} — My Clan{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <div class="flex flex-col md:flex-row md:items-end gap-8">
+      <div class="relative w-28 h-28 shrink-0">
+        <div class="absolute -inset-2 border border-[rgba(230,57,70,0.35)] rotate-3"></div>
+        <div class="w-full h-full bg-[#121215] clip-frame flex items-center justify-center">
+          <span class="font-kanji text-5xl text-[#E63946]/30">{{ team.name[0] }}</span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-2">我が一族 — MY CLAN</p>
+        <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#F5F2EB] flex items-center gap-4">
+          {{ team.name }}<span class="font-kanji text-3xl text-[#E63946]">隊</span>
+        </h1>
+        <p class="font-mono2 text-xs tracking-[0.25em] text-[#D4AF37] uppercase mt-3">Rank #{{ team.place or "—" }}</p>
+        {% if team.captain_id == User.id %}
+        <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#D4AF37]/80 mt-2">刀 — You are the Captain</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="brush-divider mt-10 w-2/3"></div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6">
+      <span class="font-kanji text-lg text-[#E63946]">杯</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4">{{ team.score or 0 }}<span class="text-sm font-semibold text-[#D4AF37] ml-1.5">PTS</span></p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Clan Honor</p>
+    </div>
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6" style="transition-delay: 0.07s">
+      <span class="font-kanji text-lg text-[#E63946]">刀</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4">#{{ team.place or "—" }}</p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Clan Rank</p>
+    </div>
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6" style="transition-delay: 0.14s">
+      <span class="font-kanji text-lg text-[#E63946]">的</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4">{{ team.solves | length }}</p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Trials Conquered</p>
+    </div>
+    <div class="reveal trial-card bg-[#121215] border border-white/10 p-6" style="transition-delay: 0.21s">
+      <span class="font-kanji text-lg text-[#E63946]">衆</span>
+      <p class="font-heading text-3xl sm:text-4xl font-black text-[#F5F2EB] mt-4">{{ team.members | length }}</p>
+      <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-2">Warriors</p>
+    </div>
+  </div>
+
+  <!-- Members -->
+  <div class="reveal mt-12">
+    <h2 class="font-heading text-xl sm:text-2xl font-semibold tracking-wide text-[#F5F2EB]">Clan Members</h2>
+    <div class="brush-divider mt-4 w-1/3"></div>
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for member in team.members %}
+      <div class="bg-[#121215] border border-white/10 p-5 flex items-center gap-4 hover:border-[rgba(230,57,70,0.3)] transition-colors">
+        <span class="font-kanji text-2xl text-[#E63946]/60">{{ member.name[0] }}</span>
+        <div class="flex-1">
+          <a href="{{ url_for('users.public', user_id=member.id) }}" class="font-heading text-sm font-bold text-[#F5F2EB] hover:text-[#E63946] transition-colors">{{ member.name }}</a>
+          <p class="font-mono2 text-[10px] text-[#71717A] mt-1">{{ member.score or 0 }} PTS</p>
+        </div>
+        {% if member.id == team.captain_id %}
+        <span class="font-mono2 text-[9px] tracking-widest uppercase text-[#D4AF37] border border-[#D4AF37]/40 px-2 py-1">Captain</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if team.captain_id == User.id %}
+  <!-- Clan Management (Captain only) -->
+  <div class="reveal mt-12">
+    <h2 class="font-heading text-xl sm:text-2xl font-semibold tracking-wide text-[#F5F2EB]">鍛 — Clan Forge</h2>
+    <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1 mb-2">Captain's sanctum</p>
+    <div class="brush-divider mt-4 w-1/3"></div>
+    <div id="team-mgmt-msg"></div>
+
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Edit clan -->
+      <div class="bg-[#121215] border border-white/10 p-6">
+        <h3 class="font-heading text-sm font-bold tracking-widest uppercase text-[#F5F2EB] mb-4">Reforge clan</h3>
+        <div class="mb-4">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Clan Name</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">隊</span>
+            <input type="text" id="team-name" value="{{ team.name }}" class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3 outline-none min-w-0 border-0" />
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Affiliation</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">属</span>
+            <input type="text" id="team-affiliation" value="{{ team.affiliation or '' }}" placeholder="Your school/org" class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3 outline-none min-w-0 border-0" />
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Current Password</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">秘</span>
+            <input type="password" id="team-confirm" placeholder="Your password" autocomplete="current-password" class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3 outline-none min-w-0 border-0" />
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">New Clan Password</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">新</span>
+            <input type="password" id="team-password" placeholder="Leave blank to keep" autocomplete="new-password" class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3 outline-none min-w-0 border-0" />
+          </div>
+        </div>
+        <button onclick="updateTeam()" class="btn-slash w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-xs font-bold tracking-[0.3em] uppercase py-3.5 transition-colors flex items-center justify-center gap-2">
+          <span class="font-kanji">刀</span> Reforge Clan
+        </button>
+      </div>
+
+      <!-- Invite -->
+      <div class="bg-[#121215] border border-white/10 p-6">
+        <h3 class="font-heading text-sm font-bold tracking-widest uppercase text-[#F5F2EB] mb-4">Summon warrior</h3>
+        <p class="font-mono2 text-[10px] tracking-widest uppercase text-[#71717A] mb-4">Share this seal to invite</p>
+        <div class="flex items-center gap-3 bg-[#050507] border border-white/10 px-4 py-3 mb-6">
+          <input type="text" id="invite-link" readonly value="{{ request.url_root }}teams/join" class="flex-1 bg-transparent font-mono2 text-xs text-[#F5F2EB] outline-none min-w-0" />
+          <button onclick="generateInvite()" class="font-mono2 text-[10px] tracking-widest uppercase text-[#E63946] hover:text-[#FF4D5E] border border-[#E63946]/30 px-3 py-1.5 transition-colors">Forge</button>
+        </div>
+        <button onclick="copyInvite()" class="btn-slash w-full bg-[#121215] border border-[rgba(212,175,55,0.45)] text-[#D4AF37] hover:bg-[#D4AF37]/10 font-heading text-xs font-bold tracking-[0.3em] uppercase py-3.5 transition-colors flex items-center justify-center gap-2">
+          <span class="font-kanji">複</span> Copy Seal
+        </button>
+        <p class="font-mono2 text-[9px] tracking-widest uppercase text-[#71717A]/70 mt-4 leading-relaxed">Invite codes expire. Recruit only those worthy of the blade.</p>
+      </div>
+
+      <!-- Captain transfer + disband -->
+      <div class="bg-[#121215] border border-white/10 p-6">
+        <h3 class="font-heading text-sm font-bold tracking-widest uppercase text-[#F5F2EB] mb-4">Succession & dissolution</h3>
+        <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Transfer captaincy</label>
+        <select id="captain-select" class="w-full bg-[#050507] border border-white/10 focus:border-[rgba(230,57,70,0.5)] font-mono2 text-sm text-[#F5F2EB] py-3 px-4 mb-4 outline-none">
+          {% for member in team.members %}
+          {% if member.id != team.captain_id %}
+          <option value="{{ member.id }}">{{ member.name }}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        <button onclick="transferCaptain()" class="btn-slash w-full bg-[#121215] border border-[rgba(6,182,212,0.4)] text-[#06B6D4] hover:bg-[#06B6D4]/10 font-heading text-xs font-bold tracking-[0.3em] uppercase py-3.5 transition-colors flex items-center justify-center gap-2 mb-6">
+          <span class="font-kanji">禅</span> Pass the Blade
+        </button>
+        <div class="border-t border-white/5 pt-6">
+          <p class="font-mono2 text-[10px] tracking-widest uppercase text-[#E63946]/80 mb-3">Danger ground</p>
+          <button onclick="disbandTeam()" class="w-full border border-[#E63946]/40 bg-[#E63946]/5 hover:bg-[#E63946]/15 text-[#FF4D5E] font-heading text-xs font-bold tracking-[0.3em] uppercase py-3.5 transition-colors flex items-center justify-center gap-2">
+            <span class="font-kanji">滅</span> Disband Clan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</main>
+
+<script>
+  function teamMgmtMsg(text, ok) {
+    const el = document.getElementById("team-mgmt-msg");
+    if (!el) return;
+    el.innerHTML = `<div class="mb-6 border px-4 py-3 font-mono2 text-xs ${ok ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E]'}">${text}</div>`;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  async function apiCall(method, url, body) {
+    const resp = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
+      },
+      credentials: "same-origin",
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return resp.json();
+  }
+
+  async function updateTeam() {
+    const payload = {
+      name: document.getElementById("team-name")?.value,
+      affiliation: document.getElementById("team-affiliation")?.value,
+    };
+    const confirm = document.getElementById("team-confirm")?.value;
+    const password = document.getElementById("team-password")?.value;
+    if (confirm) payload.confirm = confirm;
+    if (password) payload.password = password;
+    try {
+      const data = await apiCall("PATCH", "/api/v1/teams/me", payload);
+      if (data.success) {
+        teamMgmtMsg("Clan reforged. The banner rises anew.", true);
+      } else {
+        const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "The forge rejected your strike.";
+        teamMgmtMsg(msgs, false);
+      }
+    } catch (e) {
+      teamMgmtMsg("Submission failed — check your connection.", false);
+    }
+  }
+
+  async function generateInvite() {
+    try {
+      const data = await apiCall("POST", "/api/v1/teams/me/members", {});
+      if (data.success && data.data && data.data.code) {
+        const link = `${window.location.origin}/teams/invite?code=${data.data.code}`;
+        document.getElementById("invite-link").value = link;
+        teamMgmtMsg("Invite seal forged. Share it with the worthy.", true);
+      } else {
+        teamMgmtMsg("Could not forge the seal.", false);
+      }
+    } catch (e) {
+      teamMgmtMsg("Could not forge the seal.", false);
+    }
+  }
+
+  function copyInvite() {
+    const link = document.getElementById("invite-link")?.value;
+    if (link) {
+      navigator.clipboard.writeText(link).then(() => teamMgmtMsg("Seal copied to your blade.", true));
+    }
+  }
+
+  async function transferCaptain() {
+    const captainId = document.getElementById("captain-select")?.value;
+    if (!captainId) return;
+    try {
+      const data = await apiCall("PATCH", "/api/v1/teams/me", { captain_id: parseInt(captainId, 10) });
+      if (data.success) {
+        teamMgmtMsg("The blade has been passed. A new captain leads the clan.", true);
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "The succession failed.";
+        teamMgmtMsg(msgs, false);
+      }
+    } catch (e) {
+      teamMgmtMsg("The succession failed.", false);
+    }
+  }
+
+  async function disbandTeam() {
+    if (!confirm("Disband the clan? This cannot be undone.")) return;
+    try {
+      const data = await apiCall("DELETE", "/api/v1/teams/me");
+      if (data.success) {
+        window.location.href = "/";
+      } else {
+        const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "The dissolution failed.";
+        teamMgmtMsg(msgs, false);
+      }
+    } catch (e) {
+      teamMgmtMsg("The dissolution failed.", false);
+    }
+  }
+</script>
+{% endblock %}

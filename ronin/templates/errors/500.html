@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Server Fault{% endblock %}
+{% block content %}
+<section class="relative min-h-[70vh] flex items-center justify-center">
+  <div class="absolute inset-0 spotlight pointer-events-none"></div>
+  <div class="relative z-10 text-center px-6">
+    <span class="font-kanji text-8xl text-[#E63946]/20 block mb-4">破</span>
+    <h1 class="font-heading text-6xl font-black text-[#F5F2EB] mb-4">500</h1>
+    <p class="font-heading text-xl text-[#A1A1AA] mb-2">The blade shattered</p>
+    <p class="font-mono2 text-xs text-[#71717A] tracking-widest uppercase mb-8">Something broke on our side. The smiths have been notified.</p>
+    <a href="{{ request.script_root }}/" class="btn-slash inline-flex items-center gap-3 bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.25em] uppercase px-8 py-4 transition-colors duration-300">
+      <span class="font-kanji">刀</span> Return to Dojo
+    </a>
+  </div>
+</section>
+{% endblock %}

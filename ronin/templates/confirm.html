@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Confirm Spirit Link{% endblock %}
+{% block content %}
+<section class="relative min-h-[60vh] flex items-center justify-center">
+  <div class="absolute inset-0 spotlight pointer-events-none"></div>
+  <div class="relative z-10 text-center px-6">
+    <span class="font-kanji text-6xl text-[#E63946] torch-pulse block mb-6">証</span>
+    <h1 class="font-heading text-3xl font-black uppercase tracking-[0.25em] text-[#F5F2EB] mb-4">Confirm your spirit link</h1>
+    <p class="font-mono2 text-sm text-[#A1A1AA] max-w-md mx-auto leading-relaxed mb-8">
+      A whisper has been sent to your spirit link. Follow the path within to verify your presence in the dojo.
+    </p>
+    <a href="{{ url_for('views.static_html', route='/') }}" class="btn-slash inline-flex items-center gap-3 bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.25em] uppercase px-8 py-4 transition-colors duration-300">
+      <span class="font-kanji">刀</span> Return to Dojo
+    </a>
+  </div>
+</section>
+{% endblock %}

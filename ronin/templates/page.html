@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% include "components/landing.html" %}
+{% if request.path != '/' and request.path != '' %}
+<main class="max-w-4xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal">
+    <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-3">巻 — SCROLL</p>
+    <h1 class="font-heading text-4xl sm:text-5xl font-black uppercase tracking-tight text-[#F5F2EB]">{{ title }}</h1>
+    <div class="brush-divider mt-8 w-1/3"></div>
+  </div>
+
+  <div class="reveal mt-10 max-w-none">
+    <div class="text-[#A1A1AA] text-sm sm:text-base leading-relaxed">
+      {{ content | safe }}
+    </div>
+  </div>
+</main>
+{% endif %}
+{% endblock %}

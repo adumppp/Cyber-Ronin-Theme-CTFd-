@@ -1,0 +1,137 @@
+{% if request.path == '/' or request.path == '' %}
+<div id="splash-intro" class="fixed inset-0 z-[100] bg-[#09090B] flex flex-col items-center justify-center p-6 transition-opacity duration-700">
+  <div class="text-center relative max-w-lg w-full">
+    <span class="font-kanji text-7xl sm:text-8xl text-[#E63946] torch-pulse block mb-4">浪人</span>
+    <h1 class="font-heading text-3xl sm:text-4xl font-black uppercase tracking-[0.25em] text-[#F5F2EB] mb-2">RONIN CTF</h1>
+    <p class="font-kanji text-xs text-[#D4AF37] tracking-[0.4em] mb-8">主無き物、コードで切る — WAY OF THE CYBER WARRIOR</p>
+    <div class="w-full bg-white/5 h-[3px] mb-8 relative overflow-hidden">
+      <div id="splash-progress" class="h-full bg-gradient-to-r from-[#E63946] to-[#D4AF37] transition-all duration-100 ease-out" style="width: 0%"></div>
+    </div>
+    <button id="splash-enter" class="btn-slash inline-flex items-center gap-3 bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase px-10 py-4 transition-colors duration-300 shadow-xl shadow-red-950/50">
+      <span class="font-kanji">刀</span> Strike To Enter Dojo
+    </button>
+    <p class="font-mono2 text-[10px] text-[#71717A] tracking-[0.35em] uppercase mt-6">The shadow ledger awaits</p>
+  </div>
+</div>
+
+<section class="relative min-h-[92vh] flex items-center overflow-hidden">
+  <canvas id="enso-canvas"></canvas>
+  <div class="absolute inset-0 spotlight pointer-events-none"></div>
+  <div class="absolute left-6 top-1/2 -translate-y-1/2 hidden lg:block select-none pointer-events-none">
+    <span class="vertical-kanji font-kanji text-sm text-[#E63946]/40">主無き物コードで切る</span>
+  </div>
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-20 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center w-full">
+    <div class="lg:col-span-7">
+      <div class="fade-in-anim" style="opacity:0; transform:translateY(20px); transition:opacity 0.8s 0.2s cubic-bezier(.16,1,.3,1), transform 0.8s 0.2s cubic-bezier(.16,1,.3,1);">
+        <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-6">主無き物、コードで切る — MASTERLESS WARRIORS CUT THROUGH CODE</p>
+      </div>
+      <h1 class="font-heading font-black uppercase leading-[0.95] tracking-tight text-5xl sm:text-6xl lg:text-7xl">
+        <span class="masked-line"><span class="masked-line-inner">Way of the</span></span>
+        <span class="masked-line"><span class="masked-line-inner text-[#E63946]">Cyber</span></span>
+        <span class="masked-line"><span class="masked-line-inner"><span class="relative inline-block">Ronin<span class="hero-underline absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-[#E63946] to-[#D4AF37]"></span></span></span></span>
+      </h1>
+      <div class="fade-in-anim" style="opacity:0; transform:translateY(20px); transition:opacity 0.8s 1s cubic-bezier(.16,1,.3,1), transform 0.8s 1s cubic-bezier(.16,1,.3,1);">
+        <p class="mt-8 max-w-xl text-base text-[#A1A1AA] leading-relaxed">
+          An elite cyber warfare trials ground modeled after feudal Japanese martial philosophy. Hone your exploits, decode cryptograms, and claim honor in the shadow ledger.
+        </p>
+      </div>
+      <div class="fade-in-anim" style="opacity:0; transform:translateY(20px); transition:opacity 0.8s 1.2s cubic-bezier(.16,1,.3,1), transform 0.8s 1.2s cubic-bezier(.16,1,.3,1);">
+        <div class="mt-10 flex flex-wrap gap-4">
+          <a href="{{ request.script_root }}/challenges" class="btn-slash bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.25em] uppercase px-8 py-4 transition-colors duration-300 flex items-center gap-3 shadow-lg shadow-red-950/30">
+            <span class="font-kanji">刀</span> Enter the Trials
+          </a>
+          <a href="{{ request.script_root }}/scoreboard" class="border border-[rgba(212,175,55,0.45)] text-[#D4AF37] hover:bg-[#D4AF37]/10 font-heading text-sm font-bold tracking-[0.25em] uppercase px-8 py-4 transition-colors duration-300 flex items-center gap-3">
+            <span class="font-kanji">巻</span> Honor Scroll
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="fade-in-anim lg:col-span-5 relative hidden lg:block" style="opacity:0; transform:translateY(20px); transition:opacity 0.8s 0.8s cubic-bezier(.16,1,.3,1), transform 0.8s 0.8s cubic-bezier(.16,1,.3,1);">
+      <div class="absolute -inset-4 border border-[rgba(230,57,70,0.25)] translate-x-4 translate-y-4 pointer-events-none"></div>
+      <div class="clip-frame relative overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1771055882875-57bd75655f72?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200" alt="Ronin warrior statue in ink darkness" class="w-full h-[520px] object-cover scale-105 grayscale-[0.4] contrast-125" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent"></div>
+        <span class="absolute bottom-4 right-8 font-kanji text-[#D4AF37]/70 text-lg vertical-kanji">孤高の剣</span>
+      </div>
+    </div>
+  </div>
+  <div class="fade-in-anim absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[#71717A]" style="opacity:0; transform:translateY(20px); transition:opacity 0.8s 1.8s cubic-bezier(.16,1,.3,1), transform 0.8s 1.8s cubic-bezier(.16,1,.3,1);">
+    <span class="font-mono2 text-[10px] tracking-[0.35em] uppercase">Descend</span>
+    <span class="bounce-soft font-mono2 text-sm">▽</span>
+  </div>
+</section>
+
+<div class="marquee-mask overflow-hidden border-y border-white/5 bg-[#0c0c0f] py-4 select-none">
+  <div class="animate-marquee flex w-max items-center gap-10 whitespace-nowrap">
+    {% for i in range(2) %}
+    <span class="flex items-center gap-10"><span class="font-heading text-xs tracking-[0.4em] text-[#F5F2EB]/30">WEB EXPLOITATION</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-kanji text-base text-[#E63946]/60">蜘蛛の巣</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-heading text-xs tracking-[0.4em] text-[#F5F2EB]/30">CRYPTOGRAPHY</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-kanji text-base text-[#E63946]/60">暗号解読</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-heading text-xs tracking-[0.4em] text-[#F5F2EB]/30">BINARY EXPLOITATION</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-kanji text-base text-[#E63946]/60">刀切符</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-heading text-xs tracking-[0.4em] text-[#F5F2EB]/30">DIGITAL FORENSICS</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-kanji text-base text-[#E63946]/60">影追跡</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-heading text-xs tracking-[0.4em] text-[#F5F2EB]/30">REVERSE ENGINEERING</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    <span class="flex items-center gap-10"><span class="font-kanji text-base text-[#E63946]/60">構造解体</span><span class="h-1 w-1 rotate-45 bg-[#D4AF37]/40"></span></span>
+    {% endfor %}
+  </div>
+</div>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-24 lg:py-32">
+  <div class="reveal">
+    <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-4">浪人道 — THE RONIN CODE</p>
+    <h2 class="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-normal text-[#F5F2EB]">Four laws of the masterless</h2>
+    <div class="brush-divider mt-8 w-2/3"></div>
+  </div>
+  <div class="mt-16">
+    {% set chapters = [
+      ("01", "理", "No Master But Logic", "A cyber ronin bound by no corporate mandate. Solitary focus yields devastating exploits — the mind, sharpened alone, cuts deepest."),
+      ("02", "鍛", "Honor in Clean Exploitation", "Every line of payload is crafted like a forged blade — precise, lightweight, unstoppable. Sloppy code is a dishonor to the craft."),
+      ("03", "帳", "The Shadow Ledger Recalls All", "Victories recorded in blood-red ink. Every solve elevates your stance on the supreme honor scroll, eternal and unforged."),
+      ("04", "秘", "Death Before Leakage", "Protect your zero-day keys like sacred relics. A ronin's silence is his armor. Never compromise the clan.")
+    ] %}
+    {% for ch in chapters %}
+    <div class="reveal group grid grid-cols-1 md:grid-cols-12 gap-6 py-10 border-t border-white/5 items-baseline">
+      <div class="md:col-span-2 flex items-baseline gap-3">
+        <span class="font-mono2 text-sm text-[#71717A]">{{ ch[0] }}</span>
+        <span class="font-kanji text-3xl text-[#E63946] group-hover:text-[#FF4D5E] transition-colors duration-300">{{ ch[1] }}</span>
+      </div>
+      <h3 class="md:col-span-4 font-heading text-xl font-bold uppercase tracking-tight text-[#F5F2EB]">{{ ch[2] }}</h3>
+      <p class="md:col-span-6 text-sm text-[#A1A1AA] leading-relaxed">{{ ch[3] }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pb-24">
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-10">
+    {% set stats = [("16", "Sacred Trials", "試練"), ("05", "Disciplines", "道"), ("148", "Warriors Entered", "武者"), ("48H", "Tournament Span", "時")] %}
+    {% for s in stats %}
+    <div class="reveal relative pl-5">
+      <span class="absolute left-0 top-1 bottom-1 w-px bg-gradient-to-b from-[#E63946] to-transparent"></span>
+      <span class="font-kanji text-xs text-[#E63946]/70">{{ s[2] }}</span>
+      <p class="landing-stat-value font-heading text-4xl sm:text-5xl font-black text-[#F5F2EB] mt-1">{{ s[0] }}</p>
+      <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] mt-2">{{ s[1] }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="relative overflow-hidden">
+  <img src="https://images.unsplash.com/photo-1771893355190-8acc15eb7897?crop=entropy&cs=srgb&fm=jpg&q=85&w=1600" alt="Torii gate at night" class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale-[0.5]" />
+  <div class="absolute inset-0 bg-gradient-to-b from-[#09090B] via-[#09090B]/70 to-[#09090B]"></div>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-28 lg:py-36 text-center">
+    <div class="reveal">
+      <span class="font-kanji text-5xl text-[#E63946]">門</span>
+      <h2 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-[#F5F2EB] mt-6">The gate is open.<br />The blade is yours.</h2>
+      <p class="mt-6 text-[#A1A1AA] max-w-lg mx-auto text-sm sm:text-base leading-relaxed">
+        Sixteen trials stand between you and the Shogun's seat on the honor scroll. Enter alone. Leave legendary.
+      </p>
+      <a href="{{ request.script_root }}/challenges" class="btn-slash inline-flex items-center gap-3 mt-10 bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.25em] uppercase px-10 py-4 transition-colors duration-300 shadow-xl shadow-red-950/40">
+        <span class="font-kanji">刀</span> Pass Through the Torii
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}

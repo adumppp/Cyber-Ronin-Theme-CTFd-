@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Found Clan{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal text-center max-w-md mx-auto">
+    <span class="font-kanji text-5xl text-[#E63946] torch-pulse block mb-4">創</span>
+    <h1 class="font-heading text-3xl font-black uppercase tracking-[0.25em] text-[#F5F2EB] mb-4">Found clan</h1>
+    
+    <div class="bg-[#121215] border border-white/10 p-8">
+      {% with form = Forms.teams.TeamRegisterForm() %}
+      <form method="post">
+        {{ form.nonce() }}
+        <div class="mb-6">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Clan Name</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">隊</span>
+            {{ form.name(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", placeholder="Clan name") }}
+          </div>
+        </div>
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Clan Password</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">秘</span>
+            {{ form.password(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", placeholder="Set password") }}
+          </div>
+        </div>
+        <button type="submit" class="btn-slash w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-4 transition-colors flex items-center justify-center gap-2">
+          <span class="font-kanji">刀</span> Strike — Found
+        </button>
+      </form>
+      {% endwith %}
+    </div>
+  </div>
+</main>
+{% endblock %}

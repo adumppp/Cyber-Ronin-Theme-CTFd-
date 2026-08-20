@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Enter the Dojo{% endblock %}
+{% block content %}
+<section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+  <div class="absolute inset-0 spotlight pointer-events-none"></div>
+  
+  <div class="relative z-10 max-w-md w-full mx-auto px-6">
+    <div class="text-center mb-10">
+      <span class="font-kanji text-5xl text-[#E63946] torch-pulse block mb-4">入</span>
+      <h1 class="font-heading text-3xl font-black uppercase tracking-[0.25em] text-[#F5F2EB]">Enter the Dojo</h1>
+      <p class="font-kanji text-xs text-[#D4AF37] tracking-[0.4em] mt-3">主無き物、コードで切る</p>
+    </div>
+
+    <div class="bg-[#121215] border border-white/10 p-8 shadow-2xl">
+      {% with form = Forms.auth.LoginForm() %}
+      <form method="post" accept-charset="utf-8" autocomplete="off" role="form">
+        {{ form.nonce() }}
+        
+        <div class="mb-6">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Warrior Name</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">名</span>
+            {{ form.name(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", placeholder="Your name") }}
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Secret Phrase</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">秘</span>
+            {{ form.password(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0 border-0", placeholder="••••••••") }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn-slash w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-4 transition-colors duration-300 flex items-center justify-center gap-2">
+          <span class="font-kanji">刀</span> Strike — Enter
+        </button>
+
+        <div class="mt-6 text-center">
+          <a href="{{ url_for('auth.register') }}" class="font-mono2 text-[11px] tracking-widest text-[#71717A] hover:text-[#D4AF37] transition-colors uppercase">
+            New warrior? <span class="text-[#E63946]">Swear the oath</span>
+          </a>
+        </div>
+      </form>
+      {% endwith %}
+    </div>
+  </div>
+</section>
+{% endblock %}

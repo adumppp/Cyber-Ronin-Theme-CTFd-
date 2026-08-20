@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Summon Warrior{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
+  <div class="reveal text-center max-w-md mx-auto">
+    <span class="font-kanji text-5xl text-[#E63946] torch-pulse block mb-4">招</span>
+    <h1 class="font-heading text-3xl font-black uppercase tracking-[0.25em] text-[#F5F2EB] mb-4">Summon warrior</h1>
+    <p class="font-mono2 text-sm text-[#A1A1AA] mb-8">Share this seal to invite another to your clan.</p>
+    
+    <div class="bg-[#121215] border border-white/10 p-8">
+      <div class="flex items-center gap-3 bg-[#050507] border border-white/10 px-4 py-3 mb-6">
+        <input type="text" value="{{ url }}" readonly 
+          class="flex-1 bg-transparent font-mono2 text-xs text-[#F5F2EB] outline-none" />
+        <button onclick="navigator.clipboard.writeText('{{ url }}'); showToast('Seal copied', 'success')" 
+          class="font-kanji text-[#E63946] hover:text-[#FF4D5E] transition-colors">複</button>
+      </div>
+      <a href="{{ url_for('teams.private') }}" class="btn-slash inline-flex items-center gap-3 bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.25em] uppercase px-6 py-3 transition-colors">
+        <span class="font-kanji">刀</span> Return
+      </a>
+    </div>
+  </div>
+</main>
+{% endblock %}
