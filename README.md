@@ -8,6 +8,18 @@ A dark, feudal-Japan themed CTFd theme with splash intro, Japanese kanji rank hi
 
 ---
 
+## 📸 Preview
+
+![Landing Page](screenshots%20preview/screenshots%201.png)
+![Page 2](screenshots%20preview/screenshots%202.png)
+![Page 3](screenshots%20preview/screenshots%203.png)
+![Page 4](screenshots%20preview/screenshots%204.png)
+![Page 5](screenshots%20preview/screenshots%205.png)
+![Page 6](screenshots%20preview/screenshots%206.png)
+![Page 7](screenshots%20preview/screenshots%207.png)
+![Page 8](screenshots%20preview/screenshots%208.png)
+
+
 ## Table of Contents
 
 1. [Requirements](#requirements)
