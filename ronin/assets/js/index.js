@@ -238,13 +238,34 @@ function initEnsoCanvas() {
     red: Math.random() < 0.35,
   }));
 
+  let cx = 0, cy = 0, R = 0;
+
+  function updateCenter() {
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const logo = $("#hero-logo");
+    if (logo && logo.offsetWidth > 0) {
+      const rect = logo.getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      cx = rect.left - parentRect.left + rect.width / 2;
+      cy = rect.top - parentRect.top + rect.height / 2;
+      R = Math.max(rect.width, rect.height) * 0.46;
+    } else {
+      cx = w > 1024 ? w * 0.72 : w * 0.5;
+      cy = h * 0.48;
+      R = Math.min(w, h) * 0.28;
+    }
+  }
+
+  let frameCount = 0;
+
   function loop(now) {
+    frameCount++;
+    if (frameCount % 20 === 0 || cx === 0) {
+      updateCenter();
+    }
     const t = now;
     ctx.clearRect(0, 0, w, h);
-
-    const cx = w > 1024 ? w * 0.72 : w * 0.5;
-    const cy = h * 0.45;
-    const R = Math.min(w, h) * 0.28;
 
     const rot = t * 0.00014;
     const gap = Math.PI * 0.22;
