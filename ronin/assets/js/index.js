@@ -771,8 +771,25 @@ async function unlockHint(challengeId, hintId, cost, hintNum) {
 async function revealFreeHint(challengeId, hintId, hintNum) {
   const challenge = challengesData.find((c) => c.id === challengeId);
   const hintWrapper = $(`#hint-wrapper-${hintId}`);
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || window.init?.csrfNonce || "";
 
   try {
+    // In CTFd, even 0-cost (free) hints must be registered via /api/v1/unlocks
+    // before the backend will release the hint content.
+    await fetch("/api/v1/unlocks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "CSRF-Token": csrfToken,
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        target: hintId,
+        type: "hints",
+      }),
+    });
+
     const hintResp = await fetch(`/api/v1/hints/${hintId}`);
     const hintData = await hintResp.json();
 
@@ -786,12 +803,13 @@ async function revealFreeHint(challengeId, hintId, hintNum) {
         hintWrapper.outerHTML = `
           <div class="fade-in font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed">
             <div class="flex items-center gap-2 mb-1.5 text-[10px] tracking-widest text-[#06B6D4] uppercase font-bold">
-              <span class="font-kanji">灯</span> Hint #${hintNum} <span class="text-[#71717A] font-normal">(Free)</span>
+              <span class="font-kanji">灯</span> Hint #${hintNum} <span class="text-[#06B6D4] font-normal">(Free)</span>
             </div>
             <div class="text-[#F5F2EB]/90 leading-relaxed">${formatHintContent(content)}</div>
           </div>
         `;
       }
+      showToast(`Hint #${hintNum} revealed!`, "success");
     } else {
       const msg = hintData.errors ? Object.values(hintData.errors).flat().join(" ") : "Could not reveal hint";
       showToast(msg, "error");
