@@ -1,6 +1,6 @@
 <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#09090B]/85 border-b border-red-950/40 px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all">
-  <a href="{{ request.script_root }}/" class="flex items-center gap-3 group">
-    <span class="torch-pulse text-[#E63946] font-kanji text-xl">炎</span>
+  <a href="{{ request.script_root }}/" class="flex items-center gap-2.5 group">
+    <img src="{{ url_for('views.themes', path='static/logo.png') }}" class="h-8 sm:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_0_12px_rgba(230,57,70,0.6)]" alt="Cyber Ronin Logo">
     <span class="font-kanji text-xl font-black text-[#D4AF37] leading-none">浪人</span>
     <span class="font-heading text-sm font-bold tracking-[0.35em] text-[#F5F2EB] group-hover:text-[#E63946] transition-colors duration-300">RONIN</span>
   </a>
