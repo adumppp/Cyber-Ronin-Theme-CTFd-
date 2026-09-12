@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ Session.nonce }}">
-  <link rel="shortcut icon" href="{% if Configs.ctf_small_icon %}{{ Configs.ctf_small_icon }}{% else %}{{ url_for('views.themes', path='static/logo.png') }}{% endif %}" type="image/x-icon">
+  <link rel="shortcut icon" href="{% if Configs.ctf_small_icon %}{{ Configs.ctf_small_icon }}{% else %}{{ url_for('views.themes', path='logo.png') }}{% endif %}" type="image/x-icon">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
