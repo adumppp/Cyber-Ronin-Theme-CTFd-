@@ -1,14 +1,40 @@
 /* ============================== RONIN CTF THEME JS ============================== */
 
-// ============================== DATA & CONFIG ==============================
-const CATEGORIES = [
-  { id: "all", label: "All Trials", kanji: "全", color: "#F5F2EB" },
-  { id: "web", label: "Web", kanji: "蜘蛛", color: "#E63946" },
-  { id: "crypto", label: "Crypto", kanji: "暗号", color: "#D4AF37" },
-  { id: "pwn", label: "Pwn", kanji: "刀切", color: "#8B5CF6" },
-  { id: "forensics", label: "Forensics", kanji: "影", color: "#06B6D4" },
-  { id: "reversing", label: "Reversing", kanji: "解体", color: "#10B981" },
+const KNOWN_CAT_META = {
+  all: { label: "All Trials", kanji: "全", color: "#F5F2EB" },
+  web: { label: "Web", kanji: "蜘蛛", color: "#E63946" },
+  crypto: { label: "Crypto", kanji: "暗号", color: "#D4AF37" },
+  cryptography: { label: "Crypto", kanji: "暗号", color: "#D4AF37" },
+  pwn: { label: "Pwn", kanji: "刀切", color: "#8B5CF6" },
+  binary: { label: "Binary", kanji: "刀切", color: "#8B5CF6" },
+  forensics: { label: "Forensics", kanji: "影", color: "#06B6D4" },
+  reversing: { label: "Reversing", kanji: "解体", color: "#10B981" },
+  rev: { label: "Reversing", kanji: "解体", color: "#10B981" },
+  misc: { label: "Misc", kanji: "雑", color: "#F97316" },
+  miscellaneous: { label: "Misc", kanji: "雑", color: "#F97316" },
+  osint: { label: "OSINT", kanji: "諜", color: "#EC4899" },
+  hardware: { label: "Hardware", kanji: "機", color: "#EAB308" },
+  warmup: { label: "Warmup", kanji: "初", color: "#14B8A6" },
+  mobile: { label: "Mobile", kanji: "携", color: "#6366F1" },
+  cloud: { label: "Cloud", kanji: "雲", color: "#38BDF8" },
+  blockchain: { label: "Blockchain", kanji: "鎖", color: "#A855F7" },
+  ai: { label: "AI", kanji: "知", color: "#06B6D4" },
+};
+
+const EXTRA_PALETTES = [
+  { color: "#F97316", kanji: "雑" },
+  { color: "#EC4899", kanji: "諜" },
+  { color: "#14B8A6", kanji: "初" },
+  { color: "#EAB308", kanji: "機" },
+  { color: "#6366F1", kanji: "携" },
+  { color: "#A855F7", kanji: "鎖" },
+  { color: "#06B6D4", kanji: "知" },
+  { color: "#F43F5E", kanji: "斬" },
+  { color: "#84CC16", kanji: "陣" },
 ];
+
+const dynamicCategories = [];
+
 
 const DIFFICULTIES = [
   { id: "all", label: "All Ranks" },
@@ -64,7 +90,27 @@ const IMAGES = {
 // ============================== HELPERS ==============================
 function $(sel) { return document.querySelector(sel); }
 function $$(sel) { return document.querySelectorAll(sel); }
-function catById(id) { return CATEGORIES.find((c) => c.id === id); }
+function catById(id) {
+  if (!id) return { id: "unknown", label: "Trial", kanji: "試", color: "#F5F2EB" };
+  const cleanId = String(id).toLowerCase().replace(/\s+/g, "");
+  if (KNOWN_CAT_META[cleanId]) {
+    return { id: cleanId, ...KNOWN_CAT_META[cleanId] };
+  }
+  const found = dynamicCategories.find((c) => c.id === cleanId);
+  if (found) return found;
+
+  let hash = 0;
+  for (let i = 0; i < cleanId.length; i++) hash = (hash << 5) - hash + cleanId.charCodeAt(i);
+  const picked = EXTRA_PALETTES[Math.abs(hash) % EXTRA_PALETTES.length];
+  const custom = {
+    id: cleanId,
+    label: String(id),
+    kanji: picked.kanji,
+    color: picked.color,
+  };
+  dynamicCategories.push(custom);
+  return custom;
+}
 
 function debounce(fn, ms) {
   let t;
@@ -79,6 +125,19 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+function getFilename(url) {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url, window.location.origin);
+    const pathPart = parsed.pathname.split("/").filter(Boolean).pop() || "";
+    return decodeURIComponent(pathPart);
+  } catch (e) {
+    const cleanUrl = String(url).split("?")[0].split("#")[0];
+    return cleanUrl.split("/").filter(Boolean).pop() || cleanUrl;
+  }
+}
+
 
 // Intersection Observer for reveal animations
 function initReveal() {
@@ -254,20 +313,53 @@ async function loadChallenges() {
       challengesData = data.data.map((c) => ({
         id: c.id,
         title: c.name,
-        category: c.category.toLowerCase().replace(/\s+/g, ""),
-        categoryLabel: c.category,
+        category: c.category ? c.category.toLowerCase().replace(/\s+/g, "") : "misc",
+        categoryLabel: c.category || "Misc",
         points: c.value,
         solves: c.solves,
         solved_by_me: c.solved_by_me,
         description: "",
         tags: c.tags || [],
       }));
+      renderCategoryTabs();
       renderChallenges();
     }
   } catch (e) {
     console.error("Failed to load challenges:", e);
     showToast("Failed to load trials", "error");
   }
+}
+
+function renderCategoryTabs() {
+  const container = $("#category-tabs");
+  if (!container) return;
+
+  const categories = [{ id: "all", label: "All Trials", kanji: "全", color: "#71717A" }];
+  const seen = new Set(["all"]);
+
+  challengesData.forEach((c) => {
+    if (!seen.has(c.category)) {
+      seen.add(c.category);
+      const meta = catById(c.category) || { id: c.category, label: c.categoryLabel, kanji: "試", color: "#F5F2EB" };
+      categories.push({
+        id: c.category,
+        label: c.categoryLabel || meta.label,
+        kanji: meta.kanji,
+        color: meta.color,
+      });
+    }
+  });
+
+  container.innerHTML = categories.map((cat) => {
+    const isActive = currentCategory === cat.id;
+    return `
+      <button onclick="setCategory('${cat.id}')" data-cat="${cat.id}" class="challenge-cat-btn relative px-4 sm:px-5 py-3 flex items-center gap-2 ${isActive ? 'active' : ''}">
+        <span class="font-kanji text-sm" style="color: ${cat.color}">${cat.kanji}</span>
+        <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase transition-colors ${isActive ? 'text-[#F5F2EB]' : 'text-[#71717A] hover:text-[#A1A1AA]'}">${escapeHtml(cat.label)}</span>
+        ${isActive ? '<span class="cat-indicator absolute bottom-0 left-2 right-2 h-[2px] bg-[#E63946]"></span>' : ''}
+      </button>
+    `;
+  }).join("");
 }
 
 function renderChallenges() {
@@ -279,9 +371,10 @@ function renderChallenges() {
   const filtered = challengesData.filter((c) => {
     if (currentCategory !== "all" && c.category !== currentCategory) return false;
     if (currentDifficulty !== "all") {
-      const diffMap = { ashigaru: 100, chunin: 200, hatamoto: 350, shogun: 500 };
-      const targetPoints = diffMap[currentDifficulty];
-      if (targetPoints && Math.abs(c.points - targetPoints) > 50) return false;
+      if (currentDifficulty === "ashigaru" && c.points > 150) return false;
+      if (currentDifficulty === "chunin" && (c.points <= 150 || c.points > 275)) return false;
+      if (currentDifficulty === "hatamoto" && (c.points <= 275 || c.points > 425)) return false;
+      if (currentDifficulty === "shogun" && c.points <= 425) return false;
     }
     if (query && !c.title.toLowerCase().includes(query)) return false;
     return true;
@@ -331,13 +424,22 @@ function setCategory(cat) {
   $$(".challenge-cat-btn").forEach((btn) => {
     const isActive = btn.dataset.cat === cat;
     btn.classList.toggle("active", isActive);
-    const label = btn.querySelector("span:last-child");
+    const label = btn.querySelector("span:nth-child(2)");
     if (label) {
-      label.className = `font-mono2 text-[11px] tracking-[0.2em] uppercase transition-colors ${isActive ? "text-[#F5F2EB]" : "text-[#71717A] group-hover:text-[#A1A1AA]"}`;
+      label.className = `font-mono2 text-[11px] tracking-[0.2em] uppercase transition-colors ${isActive ? "text-[#F5F2EB]" : "text-[#71717A] hover:text-[#A1A1AA]"}`;
+    }
+    const indicator = btn.querySelector(".cat-indicator");
+    if (isActive) {
+      if (!indicator) {
+        btn.insertAdjacentHTML("beforeend", '<span class="cat-indicator absolute bottom-0 left-2 right-2 h-[2px] bg-[#E63946]"></span>');
+      }
+    } else if (indicator) {
+      indicator.remove();
     }
   });
   renderChallenges();
 }
+
 
 function setDifficulty(diff) {
   currentDifficulty = diff;
@@ -353,6 +455,71 @@ function setDifficulty(diff) {
   renderChallenges();
 }
 
+// ============================== HINT RENDERING & UNLOCK ==============================
+function formatHintContent(str) {
+  if (!str) return "";
+  let formatted = String(str);
+  // Convert markdown image ![alt](url) -> <img src="url" alt="alt" class="max-w-full h-auto my-2.5 rounded border border-white/10 shadow-lg block" />
+  formatted = formatted.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto my-2.5 rounded border border-white/10 shadow-lg block" />');
+  // Convert markdown links [text](url) -> <a href="url" target="_blank" rel="noopener" class="text-[#06B6D4] hover:underline underline-offset-2">$1</a>
+  formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-[#06B6D4] hover:underline underline-offset-2">$1</a>');
+  // If it does not have block-level html, preserve line breaks
+  if (!/<(p|div|br|ul|ol|table)/i.test(formatted)) {
+    formatted = formatted.replace(/\n/g, "<br>");
+  }
+  return formatted;
+}
+
+function renderHintItem(challenge, hint, index) {
+  const hintNum = index + 1;
+  const cost = typeof hint.cost === "number" ? hint.cost : 0;
+  const hintId = hint.id;
+  const rawContent = hint.html || hint.content;
+
+  if (rawContent) {
+    return `
+      <div class="font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed">
+        <div class="flex items-center gap-2 mb-1.5 text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">
+          <span class="font-kanji">灯</span> Hint #${hintNum} ${cost > 0 ? `<span class="text-[#71717A] font-normal">(-${cost} PTS)</span>` : '<span class="text-[#06B6D4] font-normal">(Free)</span>'}
+        </div>
+        <div class="text-[#F5F2EB]/90 leading-relaxed">${formatHintContent(rawContent)}</div>
+      </div>
+    `;
+  }
+
+  if (cost > 0) {
+    return `
+      <div id="hint-wrapper-${hintId}" class="border border-white/10 bg-[#050507] p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors hover:border-white/20">
+        <div class="flex items-center gap-3">
+          <span class="font-kanji text-xl text-[#D4AF37]">灯</span>
+          <div>
+            <p class="font-mono2 text-xs font-bold text-[#F5F2EB]">Hint #${hintNum}</p>
+            <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Requires ${cost} honor points to unlock</p>
+          </div>
+        </div>
+        <button onclick="unlockHint(${challenge.id}, ${hintId}, ${cost}, ${hintNum})" class="btn-slash bg-[#121215] border border-[rgba(212,175,55,0.45)] text-[#D4AF37] hover:bg-[#D4AF37]/15 font-heading text-[11px] font-bold tracking-[0.2em] uppercase px-4 py-2.5 transition-colors flex items-center justify-center gap-2">
+          <span class="font-kanji">解</span> Unlock (-${cost} PTS)
+        </button>
+      </div>
+    `;
+  }
+
+  return `
+    <div id="hint-wrapper-${hintId}" class="border border-white/10 bg-[#050507] p-3.5 flex items-center justify-between gap-3 transition-colors hover:border-white/20">
+      <div class="flex items-center gap-3">
+        <span class="font-kanji text-xl text-[#06B6D4]">灯</span>
+        <div>
+          <p class="font-mono2 text-xs font-bold text-[#F5F2EB]">Hint #${hintNum}</p>
+          <p class="font-mono2 text-[10px] tracking-widest text-[#06B6D4] uppercase">Free sacred insight</p>
+        </div>
+      </div>
+      <button onclick="revealFreeHint(${challenge.id}, ${hintId}, ${hintNum})" class="btn-slash bg-[#121215] border border-[rgba(6,182,212,0.4)] text-[#06B6D4] hover:bg-[#06B6D4]/15 font-heading text-[11px] font-bold tracking-[0.2em] uppercase px-4 py-2.5 transition-colors flex items-center justify-center gap-2">
+        <span class="font-kanji">明</span> Reveal Hint
+      </button>
+    </div>
+  `;
+}
+
 // ============================== CHALLENGE MODAL ==============================
 async function openChallengeModal(challengeId) {
   const challenge = challengesData.find((c) => c.id === challengeId);
@@ -363,7 +530,10 @@ async function openChallengeModal(challengeId) {
     const data = await resp.json();
     if (data.success) {
       challenge.description = data.data.description;
-      challenge.hints = data.data.hints || [];
+      challenge.hints = (data.data.hints || []).map((h) => {
+        if (typeof h === "object" && h !== null) return h;
+        return { id: h, cost: 0 };
+      });
       challenge.files = data.data.files || [];
       challenge.connection_info = data.data.connection_info;
       challenge.attribution = data.data.attribution;
@@ -396,7 +566,7 @@ async function openChallengeModal(challengeId) {
           <span class="font-mono2 text-[10px] tracking-[0.25em] uppercase px-2.5 py-1 border" style="color: ${cat.color}; border-color: ${cat.color}55">${cat.label}</span>
         </div>
       </div>
-      <h2 class="font-heading text-2xl font-bold text-[#F5F2EB] tracking-wide">${challenge.title}</h2>
+      <h2 class="font-heading text-2xl font-bold text-[#F5F2EB] tracking-wide">${escapeHtml(challenge.title)}</h2>
       <div class="text-[#A1A1AA] text-sm leading-relaxed pt-2">${challenge.description || "Loading..."}</div>
       
       ${challenge.connection_info ? `
@@ -418,7 +588,7 @@ async function openChallengeModal(challengeId) {
             <span class="font-kanji text-sm text-[#D4AF37]">匠</span>
             <div>
               <p class="font-mono2 text-[9px] tracking-widest text-[#71717A] uppercase">Crafted by</p>
-              <p class="font-heading text-sm font-bold text-[#D4AF37] tracking-wide">${author}</p>
+              <p class="font-heading text-sm font-bold text-[#D4AF37] tracking-wide">${escapeHtml(author)}</p>
             </div>
           </div>
           ` : ""}
@@ -427,7 +597,7 @@ async function openChallengeModal(challengeId) {
             ${linkTags.map((t) => {
               const url = t.slice(5);
               return `<a href="${url}" target="_blank" rel="noopener" class="font-mono2 text-[11px] text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] hover:border-[rgba(230,57,70,0.6)] px-3 py-1.5 transition-colors">
-                <span class="font-kanji mr-1">鏈</span>${url.replace(/^https?:\/\//, "").split("/")[0]}
+                <span class="font-kanji mr-1">鏈</span>${escapeHtml(url.replace(/^https?:\/\//, "").split("/")[0])}
               </a>`;
             }).join("")}
           </div>
@@ -447,15 +617,11 @@ async function openChallengeModal(challengeId) {
         </div>
       </div>
 
-      ${challenge.hints.length > 0 ? `
+      ${challenge.hints && challenge.hints.length > 0 ? `
         <div class="mb-6">
-          <div id="hint-section">
-            <button onclick="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden')" class="font-mono2 text-[11px] tracking-widest text-[#71717A] hover:text-[#D4AF37] transition-colors flex items-center gap-2">
-              <span class="font-kanji">灯</span> REVEAL HINT
-            </button>
-            <div class="hidden fade-in font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed">
-              <span class="font-kanji mr-2">灯</span>${challenge.hints.map(h => h.content).join(" ")}
-            </div>
+          <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2.5">灯 — INSIGHTS & HINTS</p>
+          <div class="space-y-2.5" id="challenge-hints-list">
+            ${challenge.hints.map((h, idx) => renderHintItem(challenge, h, idx)).join("")}
           </div>
         </div>
       ` : ""}
@@ -464,11 +630,14 @@ async function openChallengeModal(challengeId) {
         <div class="mb-6">
           <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2">ATTACHMENTS</p>
           <div class="flex flex-wrap gap-2">
-            ${challenge.files.map(f => `
-              <a href="${f}" target="_blank" class="font-mono2 text-xs text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] px-3 py-1.5 transition-colors">
-                <span class="font-kanji mr-1">文</span>${f.split("/").pop()}
+            ${challenge.files.map(f => {
+              const filename = getFilename(f);
+              return `
+              <a href="${f}" target="_blank" download="${escapeHtml(filename)}" title="${escapeHtml(filename)}" class="font-mono2 text-xs text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] hover:border-[rgba(230,57,70,0.6)] px-3 py-1.5 transition-colors flex items-center gap-1.5 max-w-full">
+                <span class="font-kanji mr-1 flex-shrink-0">文</span>
+                <span class="truncate">${escapeHtml(filename)}</span>
               </a>
-            `).join("")}
+            `}).join("")}
           </div>
         </div>
       ` : ""}
@@ -508,6 +677,128 @@ function closeChallengeModal() {
   if (modal) {
     modal.remove();
     document.body.style.overflow = "";
+  }
+}
+
+async function unlockHint(challengeId, hintId, cost, hintNum) {
+  const challenge = challengesData.find((c) => c.id === challengeId);
+  const hintWrapper = $(`#hint-wrapper-${hintId}`);
+
+  const confirmed = confirm(`Spend ${cost} honor points to unlock Hint #${hintNum}? This deduction cannot be undone.`);
+  if (!confirmed) return;
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || window.init?.csrfNonce || "";
+
+  try {
+    const unlockResp = await fetch("/api/v1/unlocks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "CSRF-Token": csrfToken,
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        target: hintId,
+        type: "hints",
+      }),
+    });
+
+    const unlockData = await unlockResp.json();
+
+    if (unlockData.success) {
+      const hintResp = await fetch(`/api/v1/hints/${hintId}`);
+      const hintData = await hintResp.json();
+
+      if (hintData.success && hintData.data && (hintData.data.html || hintData.data.content)) {
+        const content = hintData.data.html || hintData.data.content;
+        if (challenge && challenge.hints) {
+          const h = challenge.hints.find((x) => x.id === hintId);
+          if (h) h.content = content;
+        }
+
+        if (hintWrapper) {
+          hintWrapper.outerHTML = `
+            <div class="fade-in font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed">
+              <div class="flex items-center gap-2 mb-1.5 text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">
+                <span class="font-kanji">灯</span> Hint #${hintNum} <span class="text-[#71717A] font-normal">(-${cost} PTS)</span>
+              </div>
+              <div class="text-[#F5F2EB]/90 leading-relaxed">${formatHintContent(content)}</div>
+            </div>
+          `;
+        }
+        showToast(`Hint #${hintNum} unlocked (-${cost} PTS)`, "success");
+      } else {
+        showToast("Hint unlocked! Please reopen the trial.", "success");
+      }
+    } else {
+      const errorMsg = unlockData.errors
+        ? (typeof unlockData.errors === "string" ? unlockData.errors : Object.values(unlockData.errors).flat().join(" "))
+        : "Failed to unlock hint";
+
+      if (errorMsg.toLowerCase().includes("already unlocked")) {
+        const hintResp = await fetch(`/api/v1/hints/${hintId}`);
+        const hintData = await hintResp.json();
+        if (hintData.success && hintData.data && (hintData.data.html || hintData.data.content)) {
+          const content = hintData.data.html || hintData.data.content;
+          if (challenge && challenge.hints) {
+            const h = challenge.hints.find((x) => x.id === hintId);
+            if (h) h.content = content;
+          }
+          if (hintWrapper) {
+            hintWrapper.outerHTML = `
+              <div class="fade-in font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed">
+                <div class="flex items-center gap-2 mb-1.5 text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">
+                  <span class="font-kanji">灯</span> Hint #${hintNum} <span class="text-[#10B981] font-normal">(Clan Unlocked)</span>
+                </div>
+                <div class="text-[#F5F2EB]/90 leading-relaxed">${formatHintContent(content)}</div>
+              </div>
+            `;
+          }
+          showToast(`Hint #${hintNum} was already unlocked by your clan!`, "success");
+          return;
+        }
+      }
+
+      showToast(errorMsg || "Failed to unlock hint", "error");
+    }
+  } catch (err) {
+    console.error("Unlock hint error:", err);
+    showToast("Network error unlocking hint", "error");
+  }
+}
+
+async function revealFreeHint(challengeId, hintId, hintNum) {
+  const challenge = challengesData.find((c) => c.id === challengeId);
+  const hintWrapper = $(`#hint-wrapper-${hintId}`);
+
+  try {
+    const hintResp = await fetch(`/api/v1/hints/${hintId}`);
+    const hintData = await hintResp.json();
+
+    if (hintData.success && hintData.data && (hintData.data.html || hintData.data.content)) {
+      const content = hintData.data.html || hintData.data.content;
+      if (challenge && challenge.hints) {
+        const h = challenge.hints.find((x) => x.id === hintId);
+        if (h) h.content = content;
+      }
+      if (hintWrapper) {
+        hintWrapper.outerHTML = `
+          <div class="fade-in font-mono2 text-xs text-[#D4AF37]/90 border border-[rgba(212,175,55,0.25)] bg-[#D4AF37]/5 px-4 py-3 leading-relaxed">
+            <div class="flex items-center gap-2 mb-1.5 text-[10px] tracking-widest text-[#06B6D4] uppercase font-bold">
+              <span class="font-kanji">灯</span> Hint #${hintNum} <span class="text-[#71717A] font-normal">(Free)</span>
+            </div>
+            <div class="text-[#F5F2EB]/90 leading-relaxed">${formatHintContent(content)}</div>
+          </div>
+        `;
+      }
+    } else {
+      const msg = hintData.errors ? Object.values(hintData.errors).flat().join(" ") : "Could not reveal hint";
+      showToast(msg, "error");
+    }
+  } catch (err) {
+    console.error("Reveal free hint error:", err);
+    showToast("Failed to reveal hint", "error");
   }
 }
 
@@ -736,18 +1027,13 @@ function switchBoard(mode) {
 }
 
 async function fetchTotalPoints() {
-  // Strategy 1 (authed users): sum every challenge's value from the challenges API.
-  // Strategy 2 (guests): sum unique challenge values seen across all teams' solves
-  //   from /api/v1/scoreboard/top/50 — a lower bound that equals the real total once
-  //   every challenge has been solved by someone.
+  // Fast & efficient: /api/v1/challenges already includes value for each challenge in listData.data.
+  // Summing in memory avoids the N+1 storm of 50+ individual HTTP requests that trigger 429 rate limits.
   try {
     const listResp = await fetch("/api/v1/challenges");
     const listData = await listResp.json();
     if (listData.success && Array.isArray(listData.data) && listData.data.length > 0) {
-      const details = await Promise.all(
-        listData.data.map((c) => fetch(`/api/v1/challenges/${c.id}`).then((r) => r.json()).catch(() => null))
-      );
-      const sum = details.reduce((acc, d) => acc + ((d && d.success && typeof d.data.value === "number") ? d.data.value : 0), 0);
+      const sum = listData.data.reduce((acc, c) => acc + (typeof c.value === "number" ? c.value : 0), 0);
       if (sum > 0) return sum;
     }
   } catch (e) {
@@ -814,10 +1100,16 @@ function renderScoreboard(entries) {
   if (tableBody) {
     const colV = $("#col-victories");
     if (colV) colV.textContent = scoreboardMode === "teams" ? "Warriors" : "Victories";
+    const currentUserId = window.init?.userId;
+    const currentTeamId = window.init?.teamId;
+
     tableBody.innerHTML = entries.map((t) => {
       const crest = t.name ? t.name.charAt(0) : "浪";
-      const isYou = t.account_id === (window.CTFd?.user?.id);
+      const isYou = scoreboardMode === "teams"
+        ? (currentTeamId != null && t.account_id === currentTeamId)
+        : (currentUserId != null && t.account_id === currentUserId);
       const { rank, pct } = rankForScore(t.score, totalChallengePoints, t.pos);
+
       const link = t.account_url ? `<a href="${t.account_url}" class="font-heading text-sm font-bold tracking-wide text-[#F5F2EB] hover:text-[#E63946] transition-colors">${escapeHtml(t.name)}</a>` : `<span class="font-heading text-sm font-bold tracking-wide text-[#F5F2EB]">${escapeHtml(t.name)}</span>`;
       return `
         <tr class="border-b border-white/5 transition-colors hover:bg-[#1A1A1E] ${isYou ? 'bg-[#E63946]/5 border-l-2 border-l-[#E63946]' : ''}">
@@ -1125,3 +1417,5 @@ window.switchBoard = switchBoard;
 window.openChallengeModal = openChallengeModal;
 window.closeChallengeModal = closeChallengeModal;
 window.submitFlag = submitFlag;
+window.unlockHint = unlockHint;
+window.revealFreeHint = revealFreeHint;

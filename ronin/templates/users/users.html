@@ -23,7 +23,8 @@
           {% for user in users.items %}
           <tr class="border-b border-white/5 transition-colors hover:bg-[#1A1A1E] {{ 'bg-[#E63946]/5 border-l-2 border-l-[#E63946]' if user.id == User.id else '' }}">
             <td class="px-6 py-4">
-              <span class="font-heading text-lg font-black {{ 'text-[#D4AF37]' if user.place and (user.place | int) <= 3 else 'text-[#71717A]' }}">{{ "%02d" | format((user.place or loop.index) | int) }}</span>
+              {% set calculated_rank = user.place or ((users.page - 1) * users.per_page + loop.index) %}
+              <span class="font-heading text-lg font-black {{ 'text-[#D4AF37]' if (calculated_rank | int) <= 3 else 'text-[#71717A]' }}">{{ "%02d" | format(calculated_rank | int) }}</span>
             </td>
             <td class="px-6 py-4"><span class="font-kanji text-xl text-[#E63946]/80">{{ user.name[0] }}</span></td>
             <td class="px-6 py-4">
@@ -41,12 +42,28 @@
   </div>
 
   {% if users and users.pages > 1 %}
-  <div class="reveal mt-8 flex justify-center gap-2">
-    {% for page in range(1, users.pages + 1) %}
-    <a href="?page={{ page }}" class="page-link px-3 py-2 border text-xs font-mono2 {{ 'bg-[#E63946] text-white border-[#E63946]' if users.page == page else 'bg-[#121215] text-[#F5F2EB] border-white/10 hover:bg-[#E63946]/10 hover:text-[#E63946]' }} transition-all">
-      {{ page }}
+  <div class="reveal mt-8 flex justify-center items-center gap-2">
+    {% if users.has_prev %}
+    <a href="?page={{ users.prev_num }}" class="page-link px-3.5 py-2 border border-white/10 bg-[#121215] text-[#71717A] hover:text-[#E63946] hover:border-[rgba(230,57,70,0.5)] text-xs font-mono2 transition-all">
+      ← Prev
     </a>
+    {% endif %}
+
+    {% for page in range(1, users.pages + 1) %}
+      {% if page == 1 or page == users.pages or (page >= users.page - 2 and page <= users.page + 2) %}
+        <a href="?page={{ page }}" class="page-link px-3.5 py-2 border text-xs font-mono2 {{ 'bg-[#E63946] text-white border-[#E63946]' if users.page == page else 'bg-[#121215] text-[#F5F2EB] border-white/10 hover:bg-[#E63946]/10 hover:text-[#E63946]' }} transition-all">
+          {{ page }}
+        </a>
+      {% elif page == users.page - 3 or page == users.page + 3 %}
+        <span class="px-2 font-mono2 text-xs text-[#71717A]">...</span>
+      {% endif %}
     {% endfor %}
+
+    {% if users.has_next %}
+    <a href="?page={{ users.next_num }}" class="page-link px-3.5 py-2 border border-white/10 bg-[#121215] text-[#71717A] hover:text-[#E63946] hover:border-[rgba(230,57,70,0.5)] text-xs font-mono2 transition-all">
+      Next →
+    </a>
+    {% endif %}
   </div>
   {% endif %}
 </main>

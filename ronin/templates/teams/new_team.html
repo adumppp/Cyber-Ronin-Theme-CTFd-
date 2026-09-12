@@ -7,9 +7,13 @@
     <h1 class="font-heading text-3xl font-black uppercase tracking-[0.25em] text-[#F5F2EB] mb-4">Found clan</h1>
     
     <div class="bg-[#121215] border border-white/10 p-8">
-      {% with form = Forms.teams.TeamRegisterForm() %}
+      {% include "components/errors.html" %}
+
+      {% set form = form or Forms.teams.TeamRegisterForm() %}
       <form method="post">
         {{ form.nonce() }}
+
+
         <div class="mb-6">
           <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Clan Name</label>
           <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
@@ -28,7 +32,6 @@
           <span class="font-kanji">刀</span> Strike — Found
         </button>
       </form>
-      {% endwith %}
     </div>
   </div>
 </main>

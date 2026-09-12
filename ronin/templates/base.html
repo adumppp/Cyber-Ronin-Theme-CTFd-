@@ -52,7 +52,14 @@
           'start': {{ Configs.start | tojson }},
           'end': {{ Configs.end | tojson }},
           'themeSettings': {{ Configs.theme_settings | tojson }},
-      }
+      };
+      window.CTFd = window.CTFd || {
+          user: {
+              id: {{ Session.id or 'null' }},
+              name: {{ User.name | tojson }},
+              email: {{ User.email | tojson }}
+          }
+      };
   </script>
 
   {{ Configs.theme_header }}
@@ -63,6 +70,24 @@
   {% include "components/navbar.html" %}
 
   <main role="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          {% for category, message in messages %}
+            <div class="mb-3 p-4 font-mono2 text-xs border flex items-center justify-between gap-3 shadow-xl transition-all {% if category in ['danger', 'error'] %}border-[#E63946]/70 bg-[#E63946]/10 text-[#FF4D5E]{% elif category == 'success' %}border-emerald-500/70 bg-emerald-500/10 text-emerald-300{% elif category == 'info' %}border-[#06B6D4]/70 bg-[#06B6D4]/10 text-[#06B6D4]{% else %}border-[#D4AF37]/70 bg-[#D4AF37]/10 text-[#D4AF37]{% endif %}">
+              <div class="flex items-center gap-3">
+                <span class="font-kanji text-base flex-shrink-0">
+                  {% if category in ['danger', 'error'] %}警{% elif category == 'success' %}達{% elif category == 'info' %}報{% else %}灯{% endif %}
+                </span>
+                <span class="leading-relaxed">{{ message }}</span>
+              </div>
+              <button onclick="this.closest('div').remove()" class="text-white/40 hover:text-white font-mono2 text-base px-2 transition-colors">✕</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     {% block content %}{% endblock %}
   </main>
 

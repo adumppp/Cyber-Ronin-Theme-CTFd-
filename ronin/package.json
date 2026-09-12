@@ -4,13 +4,10 @@
   "description": "RONIN CTF — Way of the Cyber Ronin. A CTFd theme.",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build"
+    "build": "vite build && node -e \"require('fs').copyFileSync('static/.vite/manifest.json', 'static/manifest.json')\""
   },
   "devDependencies": {
     "sass": "^1.70.0",
     "vite": "^5.0.0"
-  },
-  "dependencies": {
-    "templates": "^1.2.9"
   }
 }

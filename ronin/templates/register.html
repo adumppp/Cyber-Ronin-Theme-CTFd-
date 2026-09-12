@@ -12,9 +12,12 @@
     </div>
 
     <div class="bg-[#121215] border border-white/10 p-8 shadow-2xl">
-      {% with form = Forms.auth.RegistrationForm() %}
+      {% include "components/errors.html" %}
+
+      {% set form = form or Forms.auth.RegistrationForm() %}
       <form method="post" accept-charset="utf-8" autocomplete="off" role="form">
         {{ form.nonce() }}
+
         
         <div class="mb-6">
           <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Warrior Name</label>
@@ -50,7 +53,6 @@
           </a>
         </div>
       </form>
-      {% endwith %}
     </div>
   </div>
 </section>
