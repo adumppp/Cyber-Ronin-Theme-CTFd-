@@ -281,22 +281,40 @@ function initEnsoCanvas() {
 
 // ============================== TOAST SYSTEM ==============================
 function showToast(msg, type = "success") {
-  const container = $(".toast-container");
-  if (!container) return;
+  let container = $(".toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "toast-container fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none";
+    document.body.appendChild(container);
+  }
 
   const toast = document.createElement("div");
-  toast.className = "modal-in px-4 py-3 font-mono2 text-xs max-w-xs shadow-xl border";
-  toast.style.borderColor = type === "success" ? "rgba(16,185,129,0.5)" : "rgba(239,68,68,0.5)";
-  toast.style.color = type === "success" ? "#6EE7B7" : "#FCA5A5";
-  toast.style.background = "#121215";
-  toast.textContent = msg;
+  toast.className = "modal-in px-4 py-3 font-mono2 text-xs max-w-sm shadow-2xl border pointer-events-auto flex items-start gap-3 backdrop-blur-md";
+
+  if (type === "success") {
+    toast.style.borderColor = "rgba(16,185,129,0.5)";
+    toast.style.color = "#6EE7B7";
+    toast.style.background = "rgba(18,18,21,0.95)";
+  } else if (type === "info" || type === "hint") {
+    toast.style.borderColor = "rgba(212,175,55,0.6)";
+    toast.style.color = "#F5D77F";
+    toast.style.background = "rgba(18,18,21,0.95)";
+  } else {
+    toast.style.borderColor = "rgba(230,57,70,0.6)";
+    toast.style.color = "#FF4D5E";
+    toast.style.background = "rgba(18,18,21,0.95)";
+  }
+
+  const icon = type === "success" ? "達" : (type === "info" || type === "hint" ? "灯" : "警");
+  toast.innerHTML = `<span class="font-kanji text-base flex-shrink-0">${icon}</span><span class="flex-1 leading-relaxed">${escapeHtml(msg)}</span>`;
 
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.3s ease";
+    toast.style.transform = "translateY(10px)";
+    toast.style.transition = "all 0.3s ease";
     setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  }, 4000);
 }
 
 // ============================== CHALLENGES PAGE ==============================
@@ -304,6 +322,23 @@ let challengesData = [];
 let solvedChallenges = [];
 let currentCategory = "all";
 let currentDifficulty = "all";
+
+function checkUrlHashForChallenge() {
+  const hash = window.location.hash;
+  if (!hash || hash.length <= 1) return;
+  const match = hash.match(/(?:.*-)?(\d+)$/);
+  if (match) {
+    const chalId = parseInt(match[1], 10);
+    if (chalId && challengesData.some((c) => c.id === chalId)) {
+      openChallengeModal(chalId);
+    }
+  }
+}
+
+function initChallengeHashListener() {
+  window.removeEventListener("hashchange", checkUrlHashForChallenge);
+  window.addEventListener("hashchange", checkUrlHashForChallenge);
+}
 
 async function loadChallenges() {
   try {
@@ -323,6 +358,8 @@ async function loadChallenges() {
       }));
       renderCategoryTabs();
       renderChallenges();
+      initChallengeHashListener();
+      checkUrlHashForChallenge();
     }
   } catch (e) {
     console.error("Failed to load challenges:", e);
@@ -546,6 +583,12 @@ async function openChallengeModal(challengeId) {
   const cat = catById(challenge.category) || { color: "#F5F2EB", label: challenge.categoryLabel, kanji: "試" };
   const isSolved = challenge.solved_by_me || solvedChallenges.includes(challenge.id);
 
+  // Sync URL hash with open challenge
+  const slug = (challenge.title || "trial").toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+  if (window.location.hash !== `#${slug}-${challenge.id}`) {
+    history.replaceState(null, null, `#${slug}-${challenge.id}`);
+  }
+
   const modal = document.createElement("div");
   modal.id = "challenge-modal";
   modal.className = "fixed inset-0 z-[90] flex items-center justify-center p-4 fade-in";
@@ -567,103 +610,122 @@ async function openChallengeModal(challengeId) {
         </div>
       </div>
       <h2 class="font-heading text-2xl font-bold text-[#F5F2EB] tracking-wide">${escapeHtml(challenge.title)}</h2>
-      <div class="text-[#A1A1AA] text-sm leading-relaxed pt-2">${challenge.description || "Loading..."}</div>
-      
-      ${challenge.connection_info ? `
-        <div class="mb-6 mt-4">
-          <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2">接続 — CONNECTION</p>
-          <div class="font-mono2 text-xs text-[#06B6D4] bg-[#06B6D4]/5 border border-[rgba(6,182,212,0.3)] px-4 py-3 break-all leading-relaxed">${escapeHtml(challenge.connection_info).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-[#06B6D4] hover:text-[#22D3EE] underline underline-offset-4 decoration-[#06B6D4]/40 hover:decoration-[#22D3EE] transition-colors">$1</a>')}</div>
-        </div>
-      ` : ""}
 
-      ${(() => {
-        const authorTag = (challenge.tags || []).find((t) => typeof t === "string" && t.toLowerCase().startsWith("author="));
-        const linkTags = (challenge.tags || []).filter((t) => typeof t === "string" && t.toLowerCase().startsWith("link="));
-        const author = challenge.attribution || (authorTag ? authorTag.slice(7) : null);
-        if (!author && linkTags.length === 0) return "";
-        return `
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-white/5 py-3 my-4">
-          ${author ? `
-          <div class="flex items-center gap-2">
-            <span class="font-kanji text-sm text-[#D4AF37]">匠</span>
-            <div>
-              <p class="font-mono2 text-[9px] tracking-widest text-[#71717A] uppercase">Crafted by</p>
-              <p class="font-heading text-sm font-bold text-[#D4AF37] tracking-wide">${escapeHtml(author)}</p>
-            </div>
-          </div>
-          ` : ""}
-          ${linkTags.length > 0 ? `
-          <div class="flex items-center gap-2 flex-wrap">
-            ${linkTags.map((t) => {
-              const url = t.slice(5);
-              return `<a href="${url}" target="_blank" rel="noopener" class="font-mono2 text-[11px] text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] hover:border-[rgba(230,57,70,0.6)] px-3 py-1.5 transition-colors">
-                <span class="font-kanji mr-1">鏈</span>${escapeHtml(url.replace(/^https?:\/\//, "").split("/")[0])}
-              </a>`;
-            }).join("")}
-          </div>
-          ` : ""}
-        </div>
-        `;
-      })()}
-
-      <div class="flex items-center gap-8 border-y border-white/5 py-3 my-4">
-        <div>
-          <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Honor</p>
-          <p class="font-heading text-xl font-bold text-[#D4AF37]">${challenge.points} PTS</p>
-        </div>
-        <div>
-          <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Victories</p>
-          <p class="font-heading text-xl font-bold text-[#F5F2EB]">${challenge.solves}</p>
-        </div>
+      <!-- Modal Tabs: Details / Solves -->
+      <div class="flex items-center gap-6 border-b border-white/10 mb-6 mt-4">
+        <button id="modal-tab-details-btn" onclick="switchChallengeModalTab('details', ${challenge.id})" class="font-heading text-xs font-bold uppercase tracking-widest text-[#E63946] border-b-2 border-[#E63946] pb-2.5 flex items-center gap-2 transition-all">
+          <span class="font-kanji text-sm">試</span> Trial Details
+        </button>
+        <button id="modal-tab-solves-btn" onclick="switchChallengeModalTab('solves', ${challenge.id})" class="font-heading text-xs font-bold uppercase tracking-widest text-[#71717A] hover:text-[#A1A1AA] pb-2.5 flex items-center gap-2 transition-all">
+          <span class="font-kanji text-sm">血</span> Conquered (<span id="modal-solves-count">${challenge.solves}</span>)
+        </button>
       </div>
 
-      ${challenge.hints && challenge.hints.length > 0 ? `
-        <div class="mb-6">
-          <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2.5">灯 — INSIGHTS & HINTS</p>
-          <div class="space-y-2.5" id="challenge-hints-list">
-            ${challenge.hints.map((h, idx) => renderHintItem(challenge, h, idx)).join("")}
+      <!-- Panel: Details -->
+      <div id="modal-panel-details">
+        <div class="text-[#A1A1AA] text-sm leading-relaxed pt-1">${challenge.description || "Loading..."}</div>
+        
+        ${challenge.connection_info ? `
+          <div class="mb-6 mt-4">
+            <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2">接続 — CONNECTION</p>
+            <div class="font-mono2 text-xs text-[#06B6D4] bg-[#06B6D4]/5 border border-[rgba(6,182,212,0.3)] px-4 py-3 break-all leading-relaxed">${escapeHtml(challenge.connection_info).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-[#06B6D4] hover:text-[#22D3EE] underline underline-offset-4 decoration-[#06B6D4]/40 hover:decoration-[#22D3EE] transition-colors">$1</a>')}</div>
           </div>
-        </div>
-      ` : ""}
+        ` : ""}
 
-      ${challenge.files.length > 0 ? `
-        <div class="mb-6">
-          <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2">ATTACHMENTS</p>
-          <div class="flex flex-wrap gap-2">
-            ${challenge.files.map(f => {
-              const filename = getFilename(f);
-              return `
-              <a href="${f}" target="_blank" download="${escapeHtml(filename)}" title="${escapeHtml(filename)}" class="font-mono2 text-xs text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] hover:border-[rgba(230,57,70,0.6)] px-3 py-1.5 transition-colors flex items-center gap-1.5 max-w-full">
-                <span class="font-kanji mr-1 flex-shrink-0">文</span>
-                <span class="truncate">${escapeHtml(filename)}</span>
-              </a>
-            `}).join("")}
+        ${(() => {
+          const authorTag = (challenge.tags || []).find((t) => typeof t === "string" && t.toLowerCase().startsWith("author="));
+          const linkTags = (challenge.tags || []).filter((t) => typeof t === "string" && t.toLowerCase().startsWith("link="));
+          const author = challenge.attribution || (authorTag ? authorTag.slice(7) : null);
+          if (!author && linkTags.length === 0) return "";
+          return `
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-white/5 py-3 my-4">
+            ${author ? `
+            <div class="flex items-center gap-2">
+              <span class="font-kanji text-sm text-[#D4AF37]">匠</span>
+              <div>
+                <p class="font-mono2 text-[9px] tracking-widest text-[#71717A] uppercase">Crafted by</p>
+                <p class="font-heading text-sm font-bold text-[#D4AF37] tracking-wide">${escapeHtml(author)}</p>
+              </div>
+            </div>
+            ` : ""}
+            ${linkTags.length > 0 ? `
+            <div class="flex items-center gap-2 flex-wrap">
+              ${linkTags.map((t) => {
+                const url = t.slice(5);
+                return `<a href="${url}" target="_blank" rel="noopener" class="font-mono2 text-[11px] text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] hover:border-[rgba(230,57,70,0.6)] px-3 py-1.5 transition-colors">
+                  <span class="font-kanji mr-1">鏈</span>${escapeHtml(url.replace(/^https?:\/\//, "").split("/")[0])}
+                </a>`;
+              }).join("")}
+            </div>
+            ` : ""}
           </div>
-        </div>
-      ` : ""}
+          `;
+        })()}
 
-      ${isSolved ? `
-        <div class="modal-in flex items-center gap-3 border border-emerald-500/40 bg-emerald-500/10 px-4 py-4">
-          <span class="text-emerald-400 font-mono2 text-lg">✓</span>
+        <div class="flex items-center gap-8 border-y border-white/5 py-3 my-4">
           <div>
-            <p class="font-heading text-sm font-bold tracking-widest text-emerald-300">FLAG ACCEPTED — HONOR GAINED</p>
-            <p class="font-mono2 text-xs text-emerald-400/70 mt-0.5">+${challenge.points} pts recorded in the shadow ledger</p>
+            <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Honor</p>
+            <p class="font-heading text-xl font-bold text-[#D4AF37]">${challenge.points} PTS</p>
+          </div>
+          <div>
+            <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase">Victories</p>
+            <p class="font-heading text-xl font-bold text-[#F5F2EB]">${challenge.solves}</p>
           </div>
         </div>
-      ` : `
-        <div id="flag-submission-area">
-          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
-            <span class="font-mono2 text-xs text-[#E63946] pl-4 pr-2 whitespace-nowrap select-none">ronin@ctf:~#</span>
-            <input id="flag-input" type="text" placeholder="ronin{...}" spellcheck="false"
-              class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0" />
-            <span class="caret-blink w-2 h-4 bg-[#E63946]/70 mr-3"></span>
+
+        ${challenge.hints && challenge.hints.length > 0 ? `
+          <div class="mb-6">
+            <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2.5">灯 — INSIGHTS & HINTS</p>
+            <div class="space-y-2.5" id="challenge-hints-list">
+              ${challenge.hints.map((h, idx) => renderHintItem(challenge, h, idx)).join("")}
+            </div>
           </div>
-          <button onclick="submitFlag(${challenge.id})" class="btn-slash mt-3 w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-3.5 transition-colors duration-300 flex items-center justify-center gap-2">
-            <span class="font-kanji">刀</span> Strike — Submit Flag
-          </button>
-          <div id="flag-error" class="hidden font-mono2 text-xs text-[#EF4444] mt-2">Incorrect flag. The shadow ledger records your miss.</div>
-        </div>
-      `}
+        ` : ""}
+
+        ${challenge.files.length > 0 ? `
+          <div class="mb-6">
+            <p class="font-mono2 text-[10px] tracking-widest text-[#71717A] uppercase mb-2">ATTACHMENTS</p>
+            <div class="flex flex-wrap gap-2">
+              ${challenge.files.map(f => {
+                const filename = getFilename(f);
+                return `
+                <a href="${f}" target="_blank" download="${escapeHtml(filename)}" title="${escapeHtml(filename)}" class="font-mono2 text-xs text-[#E63946] hover:text-[#FF4D5E] border border-[rgba(230,57,70,0.3)] hover:border-[rgba(230,57,70,0.6)] px-3 py-1.5 transition-colors flex items-center gap-1.5 max-w-full">
+                  <span class="font-kanji mr-1 flex-shrink-0">文</span>
+                  <span class="truncate">${escapeHtml(filename)}</span>
+                </a>
+              `}).join("")}
+            </div>
+          </div>
+        ` : ""}
+
+        ${isSolved ? `
+          <div class="modal-in flex items-center gap-3 border border-emerald-500/40 bg-emerald-500/10 px-4 py-4">
+            <span class="text-emerald-400 font-mono2 text-lg">✓</span>
+            <div>
+              <p class="font-heading text-sm font-bold tracking-widest text-emerald-300">FLAG ACCEPTED — HONOR GAINED</p>
+              <p class="font-mono2 text-xs text-emerald-400/70 mt-0.5">+${challenge.points} pts recorded in the shadow ledger</p>
+            </div>
+          </div>
+        ` : `
+          <div id="flag-submission-area">
+            <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+              <span class="font-mono2 text-xs text-[#E63946] pl-4 pr-2 whitespace-nowrap select-none">ronin@ctf:~#</span>
+              <input id="flag-input" type="text" placeholder="ronin{...}" spellcheck="false"
+                class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3.5 outline-none min-w-0" />
+              <span class="caret-blink w-2 h-4 bg-[#E63946]/70 mr-3"></span>
+            </div>
+            <button onclick="submitFlag(${challenge.id})" class="btn-slash mt-3 w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-3.5 transition-colors duration-300 flex items-center justify-center gap-2">
+              <span class="font-kanji">刀</span> Strike — Submit Flag
+            </button>
+            <div id="flag-error" class="hidden font-mono2 text-xs text-[#EF4444] mt-2">Incorrect flag. The shadow ledger records your miss.</div>
+          </div>
+        `}
+      </div>
+
+      <!-- Panel: Solves / Conquered -->
+      <div id="modal-panel-solves" class="hidden">
+        <div class="py-8 text-center font-mono2 text-xs text-[#71717A]">Reading the shadow ledger...</div>
+      </div>
     </div>
   `;
 
@@ -672,11 +734,94 @@ async function openChallengeModal(challengeId) {
   document.body.style.overflow = "hidden";
 }
 
+async function switchChallengeModalTab(tab, challengeId) {
+  const detailsBtn = $("#modal-tab-details-btn");
+  const solvesBtn = $("#modal-tab-solves-btn");
+  const detailsPanel = $("#modal-panel-details");
+  const solvesPanel = $("#modal-panel-solves");
+
+  if (!detailsBtn || !solvesBtn || !detailsPanel || !solvesPanel) return;
+
+  if (tab === "details") {
+    detailsBtn.className = "font-heading text-xs font-bold uppercase tracking-widest text-[#E63946] border-b-2 border-[#E63946] pb-2.5 flex items-center gap-2 transition-all";
+    solvesBtn.className = "font-heading text-xs font-bold uppercase tracking-widest text-[#71717A] hover:text-[#A1A1AA] pb-2.5 flex items-center gap-2 transition-all";
+    detailsPanel.classList.remove("hidden");
+    solvesPanel.classList.add("hidden");
+  } else {
+    solvesBtn.className = "font-heading text-xs font-bold uppercase tracking-widest text-[#E63946] border-b-2 border-[#E63946] pb-2.5 flex items-center gap-2 transition-all";
+    detailsBtn.className = "font-heading text-xs font-bold uppercase tracking-widest text-[#71717A] hover:text-[#A1A1AA] pb-2.5 flex items-center gap-2 transition-all";
+    detailsPanel.classList.add("hidden");
+    solvesPanel.classList.remove("hidden");
+    solvesPanel.innerHTML = '<div class="py-8 text-center font-mono2 text-xs text-[#71717A]">Unrolling the shadow ledger...</div>';
+
+    try {
+      const resp = await fetch(`/api/v1/challenges/${challengeId}/solves`);
+      const data = await resp.json();
+      if (data.success && Array.isArray(data.data)) {
+        if (data.data.length === 0) {
+          solvesPanel.innerHTML = `
+            <div class="text-center py-12">
+              <span class="font-kanji text-4xl text-[#71717A]/40 block mb-3">斬</span>
+              <p class="font-heading text-sm font-bold uppercase tracking-widest text-[#71717A]">No victories recorded yet</p>
+              <p class="font-mono2 text-[10px] uppercase tracking-widest text-[#D4AF37] mt-1">First blood still awaits a worthy blade</p>
+            </div>
+          `;
+          return;
+        }
+
+        solvesPanel.innerHTML = `
+          <div class="overflow-x-auto max-h-[50vh] modal-scroll">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-white/10 font-mono2 text-[9px] tracking-[0.25em] uppercase text-[#71717A]">
+                  <th class="py-2.5 px-3">Rank</th>
+                  <th class="py-2.5 px-3">Warrior / Clan</th>
+                  <th class="py-2.5 px-3 text-right">Struck At</th>
+                </tr>
+              </thead>
+              <tbody class="font-mono2 text-xs divide-y divide-white/5">
+                ${data.data.map((s, idx) => {
+                  const isFirstBlood = idx === 0;
+                  const profileUrl = s.account_url || `/users/${s.account_id}`;
+                  return `
+                    <tr class="hover:bg-white/[0.02] transition-colors ${isFirstBlood ? 'bg-[#E63946]/5' : ''}">
+                      <td class="py-3 px-3">
+                        ${isFirstBlood ? `
+                          <span class="inline-flex items-center gap-1 border border-[#E63946] bg-[#E63946]/20 text-[#FF4D5E] px-2 py-0.5 text-[9px] font-bold tracking-widest">
+                            <span class="font-kanji text-xs">血</span> FIRST BLOOD
+                          </span>
+                        ` : `
+                          <span class="font-bold text-[#71717A]">#${idx + 1}</span>
+                        `}
+                      </td>
+                      <td class="py-3 px-3">
+                        <a href="${profileUrl}" class="font-heading text-xs font-bold text-[#F5F2EB] hover:text-[#E63946] transition-colors">${escapeHtml(s.name)}</a>
+                      </td>
+                      <td class="py-3 px-3 text-right text-[11px] text-[#71717A]">
+                        ${new Date(s.date).toLocaleString()}
+                      </td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    } catch (e) {
+      solvesPanel.innerHTML = '<div class="py-8 text-center font-mono2 text-xs text-[#EF4444]">Failed to load victories ledger.</div>';
+    }
+  }
+}
+
 function closeChallengeModal() {
   const modal = $("#challenge-modal");
   if (modal) {
     modal.remove();
     document.body.style.overflow = "";
+    if (window.location.hash) {
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
   }
 }
 
@@ -850,8 +995,15 @@ async function submitFlag(challengeId) {
       } else if (data.data.status === "already_solved") {
         showToast("You have already conquered this trial", "success");
         closeChallengeModal();
+      } else if (data.data.status === "paused") {
+        showToast("Tournament is paused — submissions disabled", "error");
+        if (errorDiv) {
+          errorDiv.textContent = "Tournament is paused. Flag submissions are temporarily sealed.";
+          errorDiv.classList.remove("hidden");
+        }
       } else {
         if (errorDiv) {
+          errorDiv.textContent = data.data.message || "Incorrect flag. The shadow ledger records your miss.";
           errorDiv.classList.remove("hidden");
           const area = $("#flag-submission-area");
           if (area) {
@@ -859,6 +1011,12 @@ async function submitFlag(challengeId) {
             setTimeout(() => area.classList.remove("shake-x"), 400);
           }
         }
+      }
+    } else {
+      if (errorDiv) {
+        const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "Submission rejected.";
+        errorDiv.textContent = msgs;
+        errorDiv.classList.remove("hidden");
       }
     }
   } catch (e) {
@@ -871,9 +1029,14 @@ async function submitFlag(challengeId) {
 async function loadScoreboard() {
   try {
     totalChallengePoints = await fetchTotalPoints();
+    const urlParams = new URLSearchParams(window.location.search);
+    const bracketId = urlParams.get("bracket_id");
+    const boardUrl = bracketId ? `/api/v1/brackets/${bracketId}/scoreboard` : "/api/v1/scoreboard";
+    const topUrl = bracketId ? `/api/v1/brackets/${bracketId}/scoreboard/top/50` : "/api/v1/scoreboard/top/50";
+
     const [resp, detail] = await Promise.all([
-      fetch("/api/v1/scoreboard").then((r) => r.json()),
-      fetch("/api/v1/scoreboard/top/50").then((r) => r.json()).catch(() => null),
+      fetch(boardUrl).then((r) => r.json()),
+      fetch(topUrl).then((r) => r.json()).catch(() => null),
     ]);
     if (resp.success) {
       rawScoreboard = resp.data;
@@ -1382,12 +1545,86 @@ function initMobileNav() {
   }
 }
 
+// ============================== LIVE EVENTS (SSE) ==============================
+let sseConnection = null;
+function initLiveEvents() {
+  if (typeof window.EventSource === "undefined" || sseConnection) return;
+
+  try {
+    sseConnection = new EventSource("/events");
+
+    sseConnection.addEventListener("notification", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const title = data.title || "Whisper";
+        const content = data.content ? (data.content.length > 80 ? data.content.slice(0, 80) + "..." : data.content) : "";
+        showToast(`${title}: ${content}`, "info");
+        incrementNotificationBadge();
+      } catch (e) {
+        showToast("New whisper received", "info");
+        incrementNotificationBadge();
+      }
+    });
+
+    sseConnection.addEventListener("hint", () => {
+      showToast("A new hint has been unlocked for a trial", "hint");
+    });
+
+    sseConnection.addEventListener("scoreboard", () => {
+      if (window.location.pathname.startsWith("/scoreboard")) {
+        loadScoreboard();
+      }
+    });
+
+    sseConnection.onerror = () => {
+      // Browser EventSource automatically reconnects
+    };
+  } catch (e) {
+    console.warn("Could not initiate /events listener:", e);
+  }
+}
+
+function incrementNotificationBadge() {
+  const badge = $("#notification-badge");
+  const mobileBadge = $("#mobile-notification-badge");
+  [badge, mobileBadge].forEach((b) => {
+    if (!b) return;
+    const current = parseInt(b.textContent.trim(), 10) || 0;
+    b.textContent = current + 1;
+    b.classList.remove("hidden");
+  });
+}
+
+async function checkUnreadNotifications() {
+  const badge = $("#notification-badge");
+  const mobileBadge = $("#mobile-notification-badge");
+  if (!badge && !mobileBadge) return;
+
+  try {
+    const resp = await fetch("/api/v1/notifications");
+    const data = await resp.json();
+    if (data.success && Array.isArray(data.data)) {
+      const count = data.data.length;
+      if (count > 0) {
+        [badge, mobileBadge].forEach((b) => {
+          if (b) {
+            b.textContent = count;
+            b.classList.remove("hidden");
+          }
+        });
+      }
+    }
+  } catch (e) {}
+}
+
 // ============================== PAGE ROUTING ==============================
 function initPage() {
   const path = window.location.pathname;
 
   initReveal();
   initMobileNav();
+  initLiveEvents();
+  checkUnreadNotifications();
 
   if (path === "/" || path === "") {
     initLanding();
@@ -1434,6 +1671,7 @@ window.setDifficulty = setDifficulty;
 window.switchBoard = switchBoard;
 window.openChallengeModal = openChallengeModal;
 window.closeChallengeModal = closeChallengeModal;
+window.switchChallengeModalTab = switchChallengeModalTab;
 window.submitFlag = submitFlag;
 window.unlockHint = unlockHint;
 window.revealFreeHint = revealFreeHint;

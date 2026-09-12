@@ -63,55 +63,267 @@
           </div>
         </div>
 
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Homeland / Country</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">国</span>
+            {{ form.country(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3.5 outline-none min-w-0 border-0 cursor-pointer [&>option]:bg-[#121215] [&>option]:text-[#F5F2EB]", id="set-country") }}
+          </div>
+        </div>
+
+        {% if form.language %}
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Dialect / Language</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">言</span>
+            {{ form.language(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3.5 outline-none min-w-0 border-0 cursor-pointer [&>option]:bg-[#121215] [&>option]:text-[#F5F2EB]", id="set-language") }}
+          </div>
+        </div>
+        {% endif %}
+
+        {% for field in form.fields %}
+        <div class="mb-8">
+          <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">{{ field.name }}</label>
+          <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+            <span class="font-kanji text-[#E63946] pl-4 pr-2">記</span>
+            {{ field(class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3.5 outline-none min-w-0 border-0", id="set-field-" ~ field.id) }}
+          </div>
+          {% if field.description %}
+          <p class="font-mono2 text-[9px] text-[#71717A] mt-1">{{ field.description }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+
         <button type="submit" class="btn-slash w-full bg-[#E63946] hover:bg-[#FF4D5E] text-white font-heading text-sm font-bold tracking-[0.3em] uppercase py-4 transition-colors duration-300 flex items-center justify-center gap-2">
           <span class="font-kanji">刀</span> Strike — Reforge
         </button>
       </form>
       {% endwith %}
     </div>
+
+    <!-- API Tokens / Personal Seals -->
+    <div class="mt-12 bg-[#121215] border border-white/10 p-8 shadow-2xl">
+      <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <h2 class="font-heading text-xl font-bold uppercase tracking-wider text-[#F5F2EB] flex items-center gap-2">
+            <span class="font-kanji text-[#D4AF37]">印</span> Personal Seals (API Tokens)
+          </h2>
+          <p class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A] mt-1">Authenticate scripts & automated blades</p>
+        </div>
+      </div>
+
+      <div id="token-infos"></div>
+
+      <!-- Active Tokens List -->
+      <div class="overflow-x-auto mb-8">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-white/10 font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">
+              <th class="py-3 px-3">Seal / Purpose</th>
+              <th class="py-3 px-3">Forged</th>
+              <th class="py-3 px-3">Expires</th>
+              <th class="py-3 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="tokens-table-body" class="font-mono2 text-xs">
+            <tr>
+              <td colspan="4" class="py-4 text-center text-[#71717A]">Reading the scroll...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Forge Token Form -->
+      <div class="border-t border-white/5 pt-6">
+        <h3 class="font-heading text-sm font-bold uppercase tracking-widest text-[#F5F2EB] mb-4">Forge a New Seal</h3>
+        <form id="create-token-form" class="space-y-4">
+          <div>
+            <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Purpose / Description</label>
+            <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+              <span class="font-kanji text-[#E63946] pl-4 pr-2">名</span>
+              <input type="text" id="token-description" placeholder="e.g. Flag submitter script" required class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] placeholder:text-[#71717A]/50 py-3 outline-none min-w-0 border-0" />
+            </div>
+          </div>
+          <div>
+            <label class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] block mb-2">Expiration Date (Optional)</label>
+            <div class="flex items-center bg-[#050507] border border-white/10 focus-within:border-[rgba(230,57,70,0.5)] transition-colors">
+              <span class="font-kanji text-[#E63946] pl-4 pr-2">暦</span>
+              <input type="date" id="token-expiration" class="flex-1 bg-transparent font-mono2 text-sm text-[#F5F2EB] py-3 outline-none min-w-0 border-0 [color-scheme:dark]" />
+            </div>
+          </div>
+          <button type="submit" class="btn-slash bg-[#121215] border border-[rgba(212,175,55,0.4)] text-[#D4AF37] hover:bg-[#D4AF37]/10 font-heading text-xs font-bold tracking-[0.25em] uppercase py-3.5 px-6 transition-colors duration-300 flex items-center justify-center gap-2">
+            <span class="font-kanji">印</span> Forge Seal
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 </main>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // ---------------- Settings Form Submission ----------------
     const form = document.getElementById("settings-form");
-    if (!form) return;
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const infos = document.getElementById("settings-infos");
-      const payload = {
-        name: document.getElementById("set-name")?.value,
-        email: document.getElementById("set-email")?.value,
-        affiliation: document.getElementById("set-affiliation")?.value,
-        website: document.getElementById("set-website")?.value,
-      };
-      const confirm = document.getElementById("set-confirm")?.value;
-      const password = document.getElementById("set-password")?.value;
-      if (confirm) payload.confirm = confirm;
-      if (password) payload.password = password;
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const infos = document.getElementById("settings-infos");
+        const payload = {
+          name: document.getElementById("set-name")?.value,
+          email: document.getElementById("set-email")?.value,
+          affiliation: document.getElementById("set-affiliation")?.value,
+          website: document.getElementById("set-website")?.value,
+          country: document.getElementById("set-country")?.value,
+        };
+        const lang = document.getElementById("set-language")?.value;
+        if (lang) payload.language = lang;
 
-      try {
-        const resp = await fetch("/api/v1/users/me", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
-          },
-          credentials: "same-origin",
-          body: JSON.stringify(payload),
+        // Collect extra custom fields
+        document.querySelectorAll("[id^='set-field-']").forEach((el) => {
+          const fid = el.id.replace("set-field-", "");
+          payload[`fields[${fid}]`] = el.value;
         });
-        const data = await resp.json();
-        if (data.success) {
-          if (infos) infos.innerHTML = '<div class="mb-6 border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-mono2 text-xs px-4 py-3">Identity reforged. The blade is sharper now.</div>';
-        } else {
-          const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "The forge rejected your strike.";
-          if (infos) infos.innerHTML = `<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">${msgs}</div>`;
+
+        const confirm = document.getElementById("set-confirm")?.value;
+        const password = document.getElementById("set-password")?.value;
+        if (confirm) payload.confirm = confirm;
+        if (password) payload.password = password;
+
+        try {
+          const resp = await fetch("/api/v1/users/me", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
+            },
+            credentials: "same-origin",
+            body: JSON.stringify(payload),
+          });
+          const data = await resp.json();
+          if (data.success) {
+            if (infos) infos.innerHTML = '<div class="mb-6 border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-mono2 text-xs px-4 py-3">Identity reforged. The blade is sharper now.</div>';
+          } else {
+            const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "The forge rejected your strike.";
+            if (infos) infos.innerHTML = `<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">${msgs}</div>`;
+          }
+        } catch (err) {
+          if (infos) infos.innerHTML = '<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">Submission failed — check your connection.</div>';
         }
-      } catch (err) {
-        if (infos) infos.innerHTML = '<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">Submission failed — check your connection.</div>';
-      }
-    });
+      });
+    }
+
+    // ---------------- API Tokens Management ----------------
+    loadTokens();
+
+    const tokenForm = document.getElementById("create-token-form");
+    if (tokenForm) {
+      tokenForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const desc = document.getElementById("token-description")?.value;
+        const exp = document.getElementById("token-expiration")?.value;
+        const tokenInfos = document.getElementById("token-infos");
+
+        const body = { description: desc };
+        if (exp) body.expiration = exp;
+
+        try {
+          const resp = await fetch("/api/v1/tokens", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
+            },
+            credentials: "same-origin",
+            body: JSON.stringify(body),
+          });
+          const data = await resp.json();
+          if (data.success && data.data) {
+            const rawToken = data.data.value;
+            tokenInfos.innerHTML = `
+              <div class="mb-6 border border-emerald-500/50 bg-emerald-500/10 p-4">
+                <p class="font-heading text-xs font-bold text-emerald-300 uppercase tracking-widest mb-2">Seal Forged Successfully</p>
+                <p class="font-mono2 text-[10px] text-[#A1A1AA] mb-3">Copy this seal now. It will never be revealed again:</p>
+                <div class="flex items-center gap-2 bg-[#050507] border border-white/10 p-2">
+                  <input type="text" readonly value="${rawToken}" id="raw-token-val" class="flex-1 bg-transparent font-mono2 text-xs text-[#F5F2EB] outline-none" />
+                  <button onclick="navigator.clipboard.writeText('${rawToken}'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000)" class="bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] px-3 py-1 font-mono2 text-[10px] uppercase hover:bg-[#D4AF37]/30 transition-colors">Copy</button>
+                </div>
+              </div>
+            `;
+            tokenForm.reset();
+            loadTokens();
+          } else {
+            const msgs = data.errors ? Object.values(data.errors).flat().join(" ") : "Failed to forge seal.";
+            tokenInfos.innerHTML = `<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">${msgs}</div>`;
+          }
+        } catch (err) {
+          tokenInfos.innerHTML = '<div class="mb-6 border border-[#E63946]/40 bg-[#E63946]/10 text-[#FF4D5E] font-mono2 text-xs px-4 py-3">Could not forge seal — check your connection.</div>';
+        }
+      });
+    }
   });
+
+  async function loadTokens() {
+    const tbody = document.getElementById("tokens-table-body");
+    if (!tbody) return;
+    try {
+      const resp = await fetch("/api/v1/tokens", {
+        headers: { "Accept": "application/json" },
+        credentials: "same-origin",
+      });
+      const data = await resp.json();
+      if (data.success && Array.isArray(data.data)) {
+        if (data.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-[#71717A]">No active seals. The forge is quiet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.data.map((t) => {
+          const forgedDate = t.created ? new Date(t.created).toLocaleDateString() : "—";
+          const expDate = t.expiration ? new Date(t.expiration).toLocaleDateString() : "Never";
+          return `
+            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 px-3 text-[#F5F2EB] font-bold">${escapeHtml(t.description || "Personal Seal")}</td>
+              <td class="py-3 px-3 text-[#A1A1AA]">${forgedDate}</td>
+              <td class="py-3 px-3 text-[#A1A1AA]">${expDate}</td>
+              <td class="py-3 px-3 text-right">
+                <button onclick="revokeToken(${t.id})" class="text-[#E63946] hover:text-[#FF4D5E] border border-[#E63946]/30 px-2.5 py-1 text-[10px] uppercase tracking-wider hover:bg-[#E63946]/10 transition-colors">Revoke</button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-[#E63946]">Failed to load seals.</td></tr>';
+    }
+  }
+
+  async function revokeToken(tokenId) {
+    if (!confirm("Revoke this seal? Any blade or script using it will lose access.")) return;
+    try {
+      const resp = await fetch(`/api/v1/tokens/${tokenId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
+        },
+        credentials: "same-origin",
+      });
+      const data = await resp.json();
+      if (data.success) {
+        loadTokens();
+      } else {
+        alert("Failed to revoke seal.");
+      }
+    } catch (e) {
+      alert("Failed to revoke seal.");
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
 </script>
 {% endblock %}

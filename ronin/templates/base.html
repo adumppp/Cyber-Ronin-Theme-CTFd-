@@ -70,6 +70,48 @@
   {% include "components/navbar.html" %}
 
   <main role="main">
+    {% if get_config('paused') %}
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <div class="p-4 font-mono2 text-xs border border-[#D4AF37]/60 bg-[#D4AF37]/10 text-[#D4AF37] flex items-center justify-between gap-3 shadow-xl">
+        <div class="flex items-center gap-3">
+          <span class="font-kanji text-lg text-[#D4AF37]">停</span>
+          <div>
+            <span class="font-heading font-bold uppercase tracking-widest text-[#F5F2EB] mr-2">Tournament Paused:</span>
+            <span>The duel is halted. Flag submissions are temporarily sealed.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if infos %}
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        {% for info in infos %}
+          <div class="mb-3 p-4 font-mono2 text-xs border border-[#06B6D4]/60 bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-between gap-3 shadow-xl">
+            <div class="flex items-center gap-3">
+              <span class="font-kanji text-base flex-shrink-0">報</span>
+              <span class="leading-relaxed">{{ info }}</span>
+            </div>
+            <button onclick="this.closest('div').remove()" class="text-white/40 hover:text-white font-mono2 text-base px-2 transition-colors">✕</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if errors %}
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        {% for error in errors %}
+          <div class="mb-3 p-4 font-mono2 text-xs border border-[#E63946]/70 bg-[#E63946]/10 text-[#FF4D5E] flex items-center justify-between gap-3 shadow-xl">
+            <div class="flex items-center gap-3">
+              <span class="font-kanji text-base flex-shrink-0">警</span>
+              <span class="leading-relaxed">{{ error }}</span>
+            </div>
+            <button onclick="this.closest('div').remove()" class="text-white/40 hover:text-white font-mono2 text-base px-2 transition-colors">✕</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
