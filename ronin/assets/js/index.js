@@ -1640,37 +1640,89 @@ async function checkUnreadNotifications() {
 
 // ============================== HALL OF FAME ==============================
 async function initHallOfFame() {
-  renderReigningTenno();
+  initReigningTenno();
   initInductees();
 }
 
-async function renderReigningTenno() {
+async function initReigningTenno() {
   const body = $("#hof-reigning-body");
   if (!body) return;
+
+  // Priority 1: the admin-designated reigning Tenno from the registry.
+  try {
+    const resp = await fetch("/plugins/hall_of_fame/api/inductees");
+    const data = await resp.json();
+    if (data && data.success && Array.isArray(data.data)) {
+      const current = data.data.find((i) => i.current === true || i.current === "true");
+      if (current) {
+        renderReigningFromEntry(current);
+        return;
+      }
+    }
+  } catch (e) {}
+
+  // Priority 2: live scoreboard #1 (when the registry has no reigning Tenno)
   try {
     const resp = await fetch("/api/v1/scoreboard/top/1");
     const data = await resp.json();
     if (data.success && Array.isArray(data.data) && data.data.length > 0) {
       const t = data.data[0];
-      const uid = t.account_id || t.account_url;
-      const link = uid ? (typeof uid === "number" ? `/users/${uid}` : uid) : "#";
+      const link = t.account_url || (t.account_id ? `/users/${t.account_id}` : "#");
       body.innerHTML = `
         <a href="${link}" class="inline-block group">
           <h3 class="font-heading text-3xl sm:text-4xl font-black text-[#D4AF37] group-hover:text-[#FFD966] transition-colors">${escapeHtml(t.name || "Unknown")}</h3>
         </a>
         <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-4">
           <span class="font-heading text-xl font-black text-[#F5F2EB]">${(t.score || 0).toLocaleString()}<span class="text-xs text-[#D4AF37]/70 ml-1.5">PTS</span></span>
-          <span class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]"> wearer of the crown</span>
+          <span class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]">wearer of the crown</span>
         </div>
-        ${uid ? `<a href="${link}" class="inline-flex mt-5 font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] hover:text-[#D4AF37] transition-colors">View Warrior →</a>` : ""}
+        ${t.account_id ? `<a href="${link}" class="inline-flex mt-5 font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] hover:text-[#D4AF37] transition-colors">View Profile →</a>` : ""}
       `;
-    } else {
-      body.innerHTML = `
-        <p class="font-kanji text-3xl text-[#D4AF37]/30">皇空</p>
-        <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] mt-3">The throne stands empty — claim it on the honor scroll.</p>`;
+      return;
     }
-  } catch (e) {
-    body.innerHTML = `<p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]">The ledger is silent — scoreboard unavailable.</p>`;
+  } catch (e) {}
+
+  // Empty throne
+  body.innerHTML = `
+    <p class="font-kanji text-3xl text-[#D4AF37]/30">皇空</p>
+    <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] mt-3">The throne stands empty — crown one in the Tenno Registry.</p>`;
+}
+
+function renderReigningFromEntry(e) {
+  const body = $("#hof-reigning-body");
+  if (!body) return;
+  // Grand card: portrait left, info right (same design language as the hall)
+  body.innerHTML = hofCardHtml({
+    idx: 0,
+    name: e.name,
+    uid: e.user_id,
+    age: e.age,
+    batch: e.batch,
+    season: e.season,
+    date: e.date,
+    img: e.image,
+    quote: e.quote,
+    current: false, // the throne wrapper already announces "Reigning"
+  });
+  initReveal();
+
+  // Live score enrichment from the linked CTFd account
+  const uid = String(e.user_id || "").trim();
+  if (uid && /^\d+$/.test(uid)) {
+    fetch(`/api/v1/users/${uid}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.success) return;
+        const u = data.data;
+        const statsRow = body.querySelector(".hof-stats");
+        if (statsRow && u.score !== undefined && u.score !== null) {
+          statsRow.innerHTML = `
+            <span class="font-heading text-lg font-black text-[#D4AF37]">${Number(u.score).toLocaleString()}<span class="text-[10px] text-[#D4AF37]/70 ml-1">PTS</span></span>
+            ${u.place ? `<span class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">Now #${u.place}</span>` : ""}
+          `;
+        }
+      })
+      .catch(() => {});
   }
 }
 
@@ -1683,9 +1735,14 @@ function initInductees() {
   fetch("/plugins/hall_of_fame/api/inductees")
     .then((r) => r.json())
     .then((data) => {
-      if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
-        renderInductees(data.data);
-        return;
+      if (data && data.success && Array.isArray(data.data)) {
+        // The reigning Tenno is honored in the throne spotlight above —
+        // Past Emperors shows everyone else.
+        const past = data.data.filter((i) => !(i.current === true || i.current === "true"));
+        if (past.length > 0) {
+          renderInductees(past);
+          return;
+        }
       }
       // Fallback: parse inductee blocks from the CMS page content
       initInducteesFromContent(source, grid);
