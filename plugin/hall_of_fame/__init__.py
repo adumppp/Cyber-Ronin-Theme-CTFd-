@@ -144,4 +144,7 @@ def public_page():
 
 
 def load(app):
+    from CTFd.plugins import register_admin_plugin_menu_bar
+
+    register_admin_plugin_menu_bar("Hall of Fame", "admin/hall_of_fame")
     app.register_blueprint(hall_of_fame)
