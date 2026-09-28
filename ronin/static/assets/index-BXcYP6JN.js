@@ -305,21 +305,21 @@ const U={all:{label:"All Trials",kanji:"全",color:"#F5F2EB"},web:{label:"Web",k
         <p class="font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#D4AF37] mt-4">— Words from the Tenno <span class="font-kanji normal-case tracking-normal">言葉</span></p>
       </blockquote>`:"",w=o&&/^\d+$/.test(o)?`<a href="/users/${o}" class="hof-name font-heading text-xl font-black text-[#D4AF37] tracking-wide hover:text-[#FFD966] transition-colors">${x(n)}</a>`:`<span class="hof-name font-heading text-xl font-black text-[#D4AF37] tracking-wide">${x(n)}</span>`;return`
     <article class="hof-card reveal ${p?"hof-card-reigning":""}" data-idx="${t}" style="transition-delay:${Math.min(t*.08,.3)}s">
-      <div class="grid grid-cols-1 sm:grid-cols-2">
-        <div class="p-6 sm:p-7 flex flex-col order-2 sm:order-1">
+      <div class="grid grid-cols-1 md:grid-cols-5">
+        <div class="relative overflow-hidden md:col-span-2 min-h-[16rem] order-1">
+          ${u}
+          <span class="absolute top-3 left-3 font-kanji text-2xl hof-seal">天皇</span>
+          ${p?'<span class="absolute bottom-14 left-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2.5 py-1">Reigning Now</span>':""}
+          ${l?`<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${x(l)}</span>`:""}
+        </div>
+        <div class="p-6 sm:p-8 flex flex-col md:col-span-3 order-2">
           <p class="font-mono2 text-[9px] tracking-[0.35em] uppercase text-[#71717A] flex items-center gap-2">
             <span class="font-kanji text-sm text-[#E63946]">天皇</span> Tenno of the Ledger
           </p>
           <h3 class="mt-2">${w}</h3>
-          ${p?'<span class="mt-2 inline-flex w-fit font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2.5 py-1">Reigning Now</span>':""}
           ${m}
           ${y}
           <div class="hof-stats flex items-center gap-4 mt-auto pt-5"></div>
-        </div>
-        <div class="relative overflow-hidden order-1 sm:order-2 min-h-[16rem]">
-          ${u}
-          <span class="absolute top-3 right-3 font-kanji text-2xl hof-seal">天皇</span>
-          ${l?`<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${x(l)}</span>`:""}
         </div>
       </div>
     </article>

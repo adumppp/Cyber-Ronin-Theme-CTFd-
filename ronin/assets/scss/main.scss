@@ -407,3 +407,47 @@ input:focus, textarea:focus, select:focus {
 .hof-crest {
   animation: hof-crest-pulse 2.6s ease-in-out infinite;
 }
+
+/* Rank ladder (Hall of Fame) */
+.hof-ladder {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hof-rank {
+  position: relative;
+  padding: 1.25rem 0 1.25rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.hof-rank:last-child {
+  border-bottom: none;
+}
+.hof-rank::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 2.1rem;
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  background: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.hof-rank-tenno::before {
+  border-color: #d4af37;
+  background: #d4af37;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+}
+.hof-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: 1rem;
+  border: 1px solid;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.hof-rank-tenno .hof-rank-badge {
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+}

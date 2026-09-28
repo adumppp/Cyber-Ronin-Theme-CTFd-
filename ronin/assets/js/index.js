@@ -1805,21 +1805,21 @@ function hofCardHtml(e) {
 
   return `
     <article class="hof-card reveal ${current ? "hof-card-reigning" : ""}" data-idx="${idx}" style="transition-delay:${Math.min(idx * 0.08, 0.3)}s">
-      <div class="grid grid-cols-1 sm:grid-cols-2">
-        <div class="p-6 sm:p-7 flex flex-col order-2 sm:order-1">
+      <div class="grid grid-cols-1 md:grid-cols-5">
+        <div class="relative overflow-hidden md:col-span-2 min-h-[16rem] order-1">
+          ${portrait}
+          <span class="absolute top-3 left-3 font-kanji text-2xl hof-seal">天皇</span>
+          ${current ? '<span class="absolute bottom-14 left-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2.5 py-1">Reigning Now</span>' : ""}
+          ${season ? `<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${escapeHtml(season)}</span>` : ""}
+        </div>
+        <div class="p-6 sm:p-8 flex flex-col md:col-span-3 order-2">
           <p class="font-mono2 text-[9px] tracking-[0.35em] uppercase text-[#71717A] flex items-center gap-2">
             <span class="font-kanji text-sm text-[#E63946]">天皇</span> Tenno of the Ledger
           </p>
           <h3 class="mt-2">${nameHtml}</h3>
-          ${current ? '<span class="mt-2 inline-flex w-fit font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2.5 py-1">Reigning Now</span>' : ""}
           ${factsHtml}
           ${quoteHtml}
           <div class="hof-stats flex items-center gap-4 mt-auto pt-5"></div>
-        </div>
-        <div class="relative overflow-hidden order-1 sm:order-2 min-h-[16rem]">
-          ${portrait}
-          <span class="absolute top-3 right-3 font-kanji text-2xl hof-seal">天皇</span>
-          ${season ? `<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${escapeHtml(season)}</span>` : ""}
         </div>
       </div>
     </article>
