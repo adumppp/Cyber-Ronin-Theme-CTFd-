@@ -303,8 +303,8 @@ const U={all:{label:"All Trials",kanji:"全",color:"#F5F2EB"},web:{label:"Web",k
         </p>
         <p class="font-heading text-sm font-bold text-[#F5F2EB] mt-1">${k.value}</p>
       </div>`).join("")}</div>`:"",y=d?`<blockquote class="hof-quote mt-6">
-        <span class="hof-quote-mark font-heading text-5xl leading-none text-[#D4AF37] select-none">“</span>
-        <p class="font-heading text-sm sm:text-base italic leading-relaxed text-[#F5F2EB] -mt-3">${x(d)}</p>
+        <p class="hof-quote-mark font-heading text-5xl leading-none text-[#D4AF37] select-none">“</p>
+        <p class="font-heading text-sm sm:text-base italic leading-relaxed text-[#F5F2EB]">${x(d)}</p>
         <p class="font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#D4AF37] mt-4">— Words from the Tenno <span class="font-kanji normal-case tracking-normal">言葉</span></p>
       </blockquote>`:"",w=o&&/^\d+$/.test(o)?`<a href="/users/${o}" class="hof-name font-heading text-xl font-black text-[#D4AF37] tracking-wide hover:text-[#FFD966] transition-colors">${x(n)}</a>`:`<span class="hof-name font-heading text-xl font-black text-[#D4AF37] tracking-wide">${x(n)}</span>`;return`
     <article class="hof-card reveal ${p?"hof-card-reigning":""}" data-idx="${t}" style="transition-delay:${Math.min(t*.08,.3)}s">
