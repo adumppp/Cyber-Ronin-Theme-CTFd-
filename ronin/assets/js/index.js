@@ -1823,10 +1823,10 @@ function hofCardHtml(e) {
   const quote = e.quote || "";
   const current = e.current === true || e.current === "true";
 
-  // Portrait: grayscale testimonial style (color restores on hover)
+  // Portrait: fills its frame edge-to-edge, grayscale (color on hover)
   const portrait = img
-    ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-72 object-cover" loading="lazy">`
-    : `<div class="hof-portrait w-full h-72 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-7xl text-[#D4AF37]/50">皇</span></div>`;
+    ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="hof-portrait absolute inset-0 w-full h-full object-cover object-top" loading="lazy">`
+    : `<div class="hof-portrait absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-7xl text-[#D4AF37]/50">皇</span></div>`;
 
   // Info block (left side): age + batch facts, then the quote
   const facts = [];
@@ -1850,8 +1850,7 @@ function hofCardHtml(e) {
 
   const quoteHtml = quote
     ? `<blockquote class="hof-quote mt-6">
-        <p class="hof-quote-mark font-heading text-5xl leading-none text-[#D4AF37] select-none">“</p>
-        <p class="font-heading text-sm sm:text-base italic leading-relaxed text-[#F5F2EB]">${escapeHtml(quote)}</p>
+        <p class="font-heading text-sm sm:text-base italic leading-relaxed text-[#F5F2EB]"><span class="text-[#D4AF37]">“</span>${escapeHtml(quote)}<span class="text-[#D4AF37]">”</span></p>
         <p class="font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#D4AF37] mt-4">— Words from the Tenno <span class="font-kanji normal-case tracking-normal">言葉</span></p>
       </blockquote>`
     : "";
@@ -1863,7 +1862,7 @@ function hofCardHtml(e) {
   return `
     <article class="hof-card reveal ${current ? "hof-card-reigning" : ""}" data-idx="${idx}" style="transition-delay:${Math.min(idx * 0.08, 0.3)}s">
       <div class="grid grid-cols-1 md:grid-cols-5">
-        <div class="relative overflow-hidden md:col-span-2 min-h-[16rem] order-1">
+        <div class="relative overflow-hidden md:col-span-2 order-1">
           ${portrait}
           <span class="absolute top-3 left-3 font-kanji text-2xl hof-seal">天皇</span>
           ${current ? '<span class="absolute bottom-14 left-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2.5 py-1">Reigning Now</span>' : ""}
