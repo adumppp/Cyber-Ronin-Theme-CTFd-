@@ -1,6 +1,7 @@
 # Hall of Fame plugin for CTFd
 # Admin-managed registry of Tenno (reigning #1) achievers with portraits,
-# reign eras and their words. Data is stored as JSON in the CTFd config table.
+# age, batch (joined -> graduation years) and their words.
+# Data is stored as JSON in the CTFd config table.
 
 import json
 import os
@@ -39,8 +40,8 @@ def to_public(items):
         {
             "name": i.get("name") or "Name Unknown",
             "user_id": (str(i.get("user_id")) if i.get("user_id") else None),
-            "season": i.get("season") or "",
-            "date": i.get("date") or "",
+            "age": i.get("age") or "",
+            "batch": i.get("batch") or "",
             "image": i.get("image") or "",
             "quote": i.get("quote") or "",
             "current": bool(i.get("current")),
@@ -90,8 +91,8 @@ def admin_view():
             entry = {
                 "name": (request.form.get("name") or "").strip(),
                 "user_id": (request.form.get("user_id") or "").strip(),
-                "season": (request.form.get("season") or "").strip(),
-                "date": (request.form.get("date") or "").strip(),
+                "age": (request.form.get("age") or "").strip(),
+                "batch": (request.form.get("batch") or "").strip(),
                 "quote": (request.form.get("quote") or "").strip(),
                 "current": request.form.get("current") == "on",
                 "image": (request.form.get("image_url") or "").strip(),
@@ -140,13 +141,6 @@ def public_page():
     # /hall-of-fame path and renders the Hall of Emperors layout. The layout's
     # JS pulls inductee data from api_inductees above.
     return render_template("page.html", title="Hall of Fame", content="")
-
-
-@hall_of_fame.route("/plugins/hall_of_fame/admin/hall_of_fame.js")
-def admin_js():
-    from flask import send_from_directory
-
-    return send_from_directory(os.path.join(PLUGIN_DIR, "assets"), "admin.js")
 
 
 def load(app):

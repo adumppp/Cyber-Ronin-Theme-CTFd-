@@ -371,8 +371,27 @@ input:focus, textarea:focus, select:focus {
 }
 .hof-quote {
   background: rgba(212, 175, 55, 0.04);
+  border-left: 2px solid rgba(212, 175, 55, 0.5);
   border-radius: 0 0.5rem 0.5rem 0;
-  padding-right: 0.75rem;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+}
+.hof-quote-mark {
+  display: block;
+  height: 0.5rem;
+}
+.hof-card .hof-portrait {
+  filter: grayscale(1) contrast(1.08);
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+.hof-card:hover .hof-portrait {
+  filter: grayscale(0) contrast(1.02);
+  transform: scale(1.015);
+}
+.hof-ribbon {
+  backdrop-filter: blur(4px);
+}
+.hof-era {
+  color: #d4af37;
 }
 @keyframes hof-crest-pulse {
   0%,

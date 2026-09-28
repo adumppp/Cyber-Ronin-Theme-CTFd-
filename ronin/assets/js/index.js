@@ -1759,42 +1759,68 @@ function hofCardHtml(e) {
   const name = e.name || "Name Unknown";
   const img = e.img || e.image || "";
   const uid = String(e.user_id || e.uid || "").trim();
+  const age = e.age || "";
+  const batch = e.batch || "";
   const season = e.season || "";
   const date = e.date || "";
   const quote = e.quote || "";
   const current = e.current === true || e.current === "true";
 
+  // Portrait: grayscale testimonial style (color restores on hover)
   const portrait = img
-    ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-56 object-cover" loading="lazy">`
-    : `<div class="hof-portrait w-full h-56 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-6xl text-[#D4AF37]/50">皇</span></div>`;
+    ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-72 object-cover" loading="lazy">`
+    : `<div class="hof-portrait w-full h-72 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-7xl text-[#D4AF37]/50">皇</span></div>`;
 
-  const reignBits = [];
-  if (season) reignBits.push(`<span class="hof-era">${escapeHtml(season)}</span>`);
-  if (date) reignBits.push(`<span>${escapeHtml(date)}</span>`);
+  // Info block (left side): age + batch facts, then the quote
+  const facts = [];
+  if (age) facts.push({ kanji: "齢", label: "Age", value: escapeHtml(age) });
+  if (batch) facts.push({ kanji: "期", label: "Batch", value: escapeHtml(batch) });
+  if (date) facts.push({ kanji: "戴", label: "Crowned", value: escapeHtml(date) });
+
+  const factsHtml = facts.length
+    ? `<div class="flex flex-wrap gap-x-8 gap-y-3 mt-5">${facts
+        .map(
+          (f) => `
+      <div>
+        <p class="font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#71717A] flex items-center gap-1.5">
+          <span class="font-kanji text-[11px] text-[#E63946]">${f.kanji}</span> ${f.label}
+        </p>
+        <p class="font-heading text-sm font-bold text-[#F5F2EB] mt-1">${f.value}</p>
+      </div>`
+        )
+        .join("")}</div>`
+    : "";
+
+  const quoteHtml = quote
+    ? `<blockquote class="hof-quote mt-6">
+        <span class="hof-quote-mark font-heading text-5xl leading-none text-[#D4AF37] select-none">“</span>
+        <p class="font-heading text-sm sm:text-base italic leading-relaxed text-[#F5F2EB] -mt-3">${escapeHtml(quote)}</p>
+        <p class="font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#D4AF37] mt-4">— Words from the Tenno <span class="font-kanji normal-case tracking-normal">言葉</span></p>
+      </blockquote>`
+    : "";
 
   const nameHtml = uid && /^\d+$/.test(uid)
-    ? `<a href="/users/${uid}" class="hof-name font-heading text-lg font-bold text-[#F5F2EB] tracking-wide hover:text-[#D4AF37] transition-colors">${escapeHtml(name)}</a>`
-    : `<span class="hof-name font-heading text-lg font-bold text-[#F5F2EB] tracking-wide">${escapeHtml(name)}</span>`;
+    ? `<a href="/users/${uid}" class="hof-name font-heading text-xl font-black text-[#D4AF37] tracking-wide hover:text-[#FFD966] transition-colors">${escapeHtml(name)}</a>`
+    : `<span class="hof-name font-heading text-xl font-black text-[#D4AF37] tracking-wide">${escapeHtml(name)}</span>`;
 
   return `
-    <article class="hof-card reveal ${current ? "hof-card-reigning" : ""}" data-idx="${idx}" style="transition-delay:${Math.min(idx * 0.06, 0.3)}s">
-      <div class="relative overflow-hidden">
-        ${portrait}
-        <span class="absolute top-3 left-3 font-kanji text-2xl hof-seal">天皇</span>
-        ${current ? '<span class="absolute top-3 right-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2 py-1">Reigning</span>' : ""}
-        ${season ? `<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${escapeHtml(season)}</span>` : ""}
-      </div>
-      <div class="p-5">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="font-heading text-lg font-bold tracking-wide text-[#F5F2EB]">${nameHtml}</h3>
+    <article class="hof-card reveal ${current ? "hof-card-reigning" : ""}" data-idx="${idx}" style="transition-delay:${Math.min(idx * 0.08, 0.3)}s">
+      <div class="grid grid-cols-1 sm:grid-cols-2">
+        <div class="p-6 sm:p-7 flex flex-col order-2 sm:order-1">
+          <p class="font-mono2 text-[9px] tracking-[0.35em] uppercase text-[#71717A] flex items-center gap-2">
+            <span class="font-kanji text-sm text-[#E63946]">天皇</span> Tenno of the Ledger
+          </p>
+          <h3 class="mt-2">${nameHtml}</h3>
+          ${current ? '<span class="mt-2 inline-flex w-fit font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2.5 py-1">Reigning Now</span>' : ""}
+          ${factsHtml}
+          ${quoteHtml}
+          <div class="hof-stats flex items-center gap-4 mt-auto pt-5"></div>
         </div>
-        ${date || uid ? `<div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">${date ? `<span>${escapeHtml(date)}</span>` : ""}${uid && /^\\d+$/.test(uid) ? `<span><a href="/users/${uid}" class="hover:text-[#D4AF37] transition-colors">Profile →</a></span>` : ""}</div>` : ""}
-        <div class="hof-stats flex items-center gap-4 mt-3"></div>
-        ${quote ? `
-        <blockquote class="hof-quote mt-4 border-l-2 border-[#D4AF37]/50 pl-4 py-1">
-          <p class="font-kanji text-xs text-[#D4AF37]/70 mb-1">言葉 — Words from the Tenno</p>
-          <p class="text-[#F5F2EB] text-sm leading-relaxed italic">「${escapeHtml(quote)}」</p>
-        </blockquote>` : ""}
+        <div class="relative overflow-hidden order-1 sm:order-2 min-h-[16rem]">
+          ${portrait}
+          <span class="absolute top-3 right-3 font-kanji text-2xl hof-seal">天皇</span>
+          ${season ? `<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${escapeHtml(season)}</span>` : ""}
+        </div>
       </div>
     </article>
   `;
