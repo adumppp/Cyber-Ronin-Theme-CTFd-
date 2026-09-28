@@ -4,7 +4,9 @@
 
 A dark, feudal-Japan themed CTFd theme with splash intro, Japanese kanji rank hierarchy (天皇 Tenno → 将軍 Shogun → 大名 Daimyo → 侍 Samurai → 農民 Peasant), echarts-powered score graphs, and full CTFd page coverage.
 
-![theme-version](https://img.shields.io/badge/version-1.0.0-red) ![ctfd](https://img.shields.io/badge/CTFd-3.x-black)
+![theme-version](https://img.shields.io/badge/version-1.0.0-red) ![ctfd](https://img.shields.io/badge/CTFd-3.x-black) ![live](https://img.shields.io/badge/Live-ctf.cyberoninctf.xyz-E63946)
+
+**See it live:** [https://ctf.cyberoninctf.xyz](https://ctf.cyberoninctf.xyz)
 
 ---
 
