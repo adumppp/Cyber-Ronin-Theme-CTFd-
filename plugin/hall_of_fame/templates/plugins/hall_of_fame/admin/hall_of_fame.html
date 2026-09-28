@@ -1,0 +1,172 @@
+{% extends "admin/base.html" %}
+
+{% block stylesheets %}
+{{ super() }}
+<style>
+  .hof-admin-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .hof-admin-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+  .hof-admin-title .kanji { font-size: 1.75rem; color: #b45309; font-weight: 700; }
+  .hof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+  .hof-item { border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #fafafa; }
+  .hof-item.current { border-color: #d4af37; box-shadow: 0 0 0 2px rgba(212,175,55,0.35); }
+  .hof-portrait { width: 100%; height: 120px; object-fit: cover; display: block; background: #eee; }
+  .hof-placeholder { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; background: #eef0f3; color: #b0b7c3; font-size: 2rem; font-weight: 700; }
+  .hof-item .body { padding: 0.75rem; font-size: 0.85rem; }
+  .hof-item .name { font-weight: 700; font-size: 0.95rem; }
+  .hof-item .meta { color: #6b7280; margin-top: 0.25rem; }
+  .hof-item .quote { color: #374151; font-style: italic; margin-top: 0.4rem; }
+  .hof-badge { display: inline-block; background: #d4af37; color: #111; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+  .hof-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .hof-form-grid .full { grid-column: 1 / -1; }
+  .hof-form-grid .field-label { font-weight: 600; font-size: 0.8rem; color: #374151; display: block; margin-bottom: 0.25rem; }
+  .hof-form-grid input[type=text], .hof-form-grid input[type=date], .hof-form-grid textarea, .hof-form-grid input[type=file] { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.9rem; }
+  .hof-form-grid textarea { min-height: 80px; resize: vertical; }
+  .hof-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  .hof-hint { color: #9ca3af; font-size: 0.75rem; margin-top: 0.2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+  <div class="container">
+    <h1>天皇 Hall of Fame <span style="color:#9ca3af;font-size:1rem;">— Tenno Registry</span></h1>
+    <p class="mb-0">Induct warriors who held the Tenno crown. Their portraits, reign eras and words appear on <a href="/hall-of-fame" target="_blank">/hall-of-fame</a>.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="hof-admin-card">
+    <div class="hof-admin-title">
+      <span class="kanji">歴代</span>
+      <div>
+        <h4 class="mb-0">Inducted Emperors ({{ items | length }})</h4>
+        <small class="text-muted">The Reigning Tenno spotlight on the public page is always automatic — these are the recorded holders.</small>
+      </div>
+    </div>
+
+    {% if items %}
+    <div class="hof-grid">
+      {% for item in items %}
+      <div class="hof-item {{ 'current' if item.get('current') }}">
+        {% if item.get('image') %}
+          <img class="hof-portrait" src="{{ item.get('image') }}" alt="{{ item.get('name') }}">
+        {% else %}
+          <div class="hof-placeholder">皇</div>
+        {% endif %}
+        <div class="body">
+          <span class="name">{{ item.get('name') or 'Name Unknown' }}</span>
+          {% if item.get('current') %} <span class="hof-badge">Reigning</span>{% endif %}
+          <div class="meta">
+            {% if item.get('season') %}{{ item.get('season') }}{% endif %}
+            {% if item.get('date') %} • {{ item.get('date') }}{% endif %}
+            {% if item.get('user_id') %} • User #{{ item.get('user_id') }}{% endif %}
+          </div>
+          {% if item.get('quote') %}<div class="quote">“{{ item.get('quote') }}”</div>{% endif %}
+          <div class="hof-actions">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="hofEdit({{ loop.index0 }})">Edit</button>
+            <form method="post" class="d-inline" onsubmit="return confirm('Remove this inductee?');">
+              <input type="hidden" name="nonce" value="{{ Session.nonce }}">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="idx" value="{{ loop.index0 }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No emperors recorded yet. Add the first one with the form below.</p>
+    {% endif %}
+  </div>
+
+  <div class="hof-admin-card">
+    <div class="hof-admin-title">
+      <span class="kanji">追加</span>
+      <div>
+        <h4 class="mb-0" id="hof-form-title">Induct a Tenno</h4>
+        <small class="text-muted">Only the Name is required — everything else is optional.</small>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="hof-form">
+      <input type="hidden" name="nonce" value="{{ Session.nonce }}">
+      <input type="hidden" name="action" value="add" id="hof-action">
+      <input type="hidden" name="idx" value="" id="hof-idx">
+
+      <div class="hof-form-grid">
+        <div>
+          <label class="field-label" for="hof-name">Warrior Name *</label>
+          <input type="text" id="hof-name" name="name" placeholder="Kurosawa_7" required>
+        </div>
+        <div>
+          <label class="field-label" for="hof-user-id">CTFd User ID (optional)</label>
+          <input type="text" id="hof-user-id" name="user_id" placeholder="4">
+          <div class="hof-hint">Links the card to their profile and shows their live score.</div>
+        </div>
+        <div>
+          <label class="field-label" for="hof-season">Season / Era (optional)</label>
+          <input type="text" id="hof-season" name="season" placeholder="Season 1 — Red Moon">
+        </div>
+        <div>
+          <label class="field-label" for="hof-date">Date Crowned (optional)</label>
+          <input type="date" id="hof-date" name="date">
+        </div>
+        <div class="full">
+          <label class="field-label" for="hof-image-url">Portrait Image URL (optional)</label>
+          <input type="text" id="hof-image-url" name="image_url" placeholder="https://example.com/portrait.jpg">
+        </div>
+        <div class="full">
+          <label class="field-label" for="hof-image-file">…or Upload a Portrait (optional — overrides the URL)</label>
+          <input type="file" id="hof-image-file" name="image_file" accept="image/*">
+        </div>
+        <div class="full">
+          <label class="field-label" for="hof-quote">Words from the Tenno (optional)</label>
+          <textarea id="hof-quote" name="quote" placeholder="The blade that silenced the server room."></textarea>
+        </div>
+        <div class="full">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="hof-current" name="current">
+            <label class="form-check-label" for="hof-current">
+              This warrior is the <strong>current reigning Tenno</strong> (gold badge on their card)
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 d-flex">
+        <button type="submit" class="btn btn-primary mr-2" id="hof-submit">Induct</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="hofReset()">Clear Form</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var HOF_ITEMS = {{ items | tojson }};
+function hofReset() {
+  document.getElementById("hof-form").reset();
+  document.getElementById("hof-action").value = "add";
+  document.getElementById("hof-idx").value = "";
+  document.getElementById("hof-form-title").textContent = "Induct a Tenno";
+  document.getElementById("hof-submit").textContent = "Induct";
+}
+function hofEdit(idx) {
+  var it = HOF_ITEMS[idx];
+  document.getElementById("hof-action").value = "edit";
+  document.getElementById("hof-idx").value = idx;
+  document.getElementById("hof-name").value = it.name || "";
+  document.getElementById("hof-user-id").value = it.user_id || "";
+  document.getElementById("hof-season").value = it.season || "";
+  document.getElementById("hof-date").value = it.date || "";
+  document.getElementById("hof-image-url").value = it.image || "";
+  document.getElementById("hof-quote").value = it.quote || "";
+  document.getElementById("hof-current").checked = !!it.current;
+  document.getElementById("hof-form-title").textContent = "Edit: " + (it.name || "Inductee");
+  document.getElementById("hof-submit").textContent = "Save Changes";
+  var form = document.getElementById("hof-form");
+  window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 90, behavior: "smooth" });
+}
+</script>
+{% endblock %}

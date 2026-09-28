@@ -1678,6 +1678,22 @@ function initInductees() {
   const source = $("#hof-source");
   const grid = $("#hof-grid");
   if (!grid) return;
+
+  // Preferred source: Hall of Fame admin plugin (managed via Admin Panel)
+  fetch("/plugins/hall_of_fame/api/inductees")
+    .then((r) => r.json())
+    .then((data) => {
+      if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+        renderInductees(data.data);
+        return;
+      }
+      // Fallback: parse inductee blocks from the CMS page content
+      initInducteesFromContent(source, grid);
+    })
+    .catch(() => initInducteesFromContent(source, grid));
+}
+
+function initInducteesFromContent(source, grid) {
   const raw = source ? Array.from(source.querySelectorAll(".tenno-inductee")) : [];
 
   if (raw.length === 0) {
@@ -1699,17 +1715,26 @@ function initInductees() {
     solves: null,
   }));
 
-  grid.innerHTML = entries.map((e) => hofCardHtml(e)).join("");
+  renderInductees(entries);
+}
+
+function renderInductees(entries) {
+  const grid = $("#hof-grid");
+  if (!grid) return;
+  grid.innerHTML = entries.map((e, i) => hofCardHtml({ ...e, idx: e.idx !== undefined ? e.idx : i })).join("");
 
   // Enrich cards with live stats for entries linked to a CTFd user
-  entries.forEach((e, i) => {
-    if (!e.uid || !/^\d+$/.test(e.uid)) return;
-    fetch(`/api/v1/users/${e.uid}`)
+  entries.forEach((e) => {
+    if (!e.user_id && !e.uid) return;
+    const uid = String(e.user_id || e.uid || "").trim();
+    if (!/^\d+$/.test(uid)) return;
+    const cardIdx = e.idx !== undefined ? e.idx : entries.indexOf(e);
+    fetch(`/api/v1/users/${uid}`)
       .then((r) => r.json())
       .then((data) => {
         if (!data.success) return;
         const u = data.data;
-        const card = grid.querySelector(`article[data-idx="${e.idx}"]`);
+        const card = grid.querySelector(`article[data-idx="${cardIdx}"]`);
         if (!card) return;
         const statsRow = card.querySelector(".hof-stats");
         if (statsRow && u.score !== undefined && u.score !== null) {
@@ -1718,9 +1743,9 @@ function initInductees() {
             ${u.place ? `<span class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">Now #${u.place}</span>` : ""}
           `;
         }
-        if (u.name) {
+        if (u.name && !e.name) {
           const nameEl = card.querySelector(".hof-name");
-          if (nameEl && !e.name) nameEl.textContent = u.name;
+          if (nameEl) nameEl.textContent = u.name;
         }
       })
       .catch(() => {});
@@ -1730,31 +1755,46 @@ function initInductees() {
 }
 
 function hofCardHtml(e) {
+  const idx = e.idx || 0;
   const name = e.name || "Name Unknown";
-  const portrait = e.img
-    ? `<img src="${escapeHtml(e.img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-56 object-cover" loading="lazy">`
+  const img = e.img || e.image || "";
+  const uid = String(e.user_id || e.uid || "").trim();
+  const season = e.season || "";
+  const date = e.date || "";
+  const quote = e.quote || "";
+  const current = e.current === true || e.current === "true";
+
+  const portrait = img
+    ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-56 object-cover" loading="lazy">`
     : `<div class="hof-portrait w-full h-56 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-6xl text-[#D4AF37]/50">皇</span></div>`;
 
   const reignBits = [];
-  if (e.season) reignBits.push(`<span>${escapeHtml(e.season)}</span>`);
-  if (e.date) reignBits.push(`<span>${escapeHtml(e.date)}</span>`);
+  if (season) reignBits.push(`<span class="hof-era">${escapeHtml(season)}</span>`);
+  if (date) reignBits.push(`<span>${escapeHtml(date)}</span>`);
 
-  const nameHtml = e.uid && /^\d+$/.test(e.uid)
-    ? `<a href="/users/${e.uid}" class="font-heading text-lg font-bold text-[#F5F2EB] tracking-wide hover:text-[#D4AF37] transition-colors">${escapeHtml(name)}</a>`
-    : `<span class="font-heading text-lg font-bold text-[#F5F2EB] tracking-wide">${escapeHtml(name)}</span>`;
+  const nameHtml = uid && /^\d+$/.test(uid)
+    ? `<a href="/users/${uid}" class="hof-name font-heading text-lg font-bold text-[#F5F2EB] tracking-wide hover:text-[#D4AF37] transition-colors">${escapeHtml(name)}</a>`
+    : `<span class="hof-name font-heading text-lg font-bold text-[#F5F2EB] tracking-wide">${escapeHtml(name)}</span>`;
 
   return `
-    <article class="hof-card reveal ${e.current ? "hof-card-reigning" : ""}" data-idx="${e.idx}" style="transition-delay:${Math.min((e.idx || 0) * 0.06, 0.3)}s">
+    <article class="hof-card reveal ${current ? "hof-card-reigning" : ""}" data-idx="${idx}" style="transition-delay:${Math.min(idx * 0.06, 0.3)}s">
       <div class="relative overflow-hidden">
-        ${e.img ? `<img src="${escapeHtml(e.img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-56 object-cover" loading="lazy">` : `<div class="hof-portrait w-full h-56 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-6xl text-[#D4AF37]/50">皇</span></div>`}
+        ${portrait}
         <span class="absolute top-3 left-3 font-kanji text-2xl hof-seal">天皇</span>
-        ${e.current ? '<span class="absolute top-3 right-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2 py-1">Reigning</span>' : ""}
+        ${current ? '<span class="absolute top-3 right-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2 py-1">Reigning</span>' : ""}
+        ${season ? `<span class="absolute bottom-0 left-0 right-0 hof-ribbon font-mono2 text-[9px] tracking-[0.3em] uppercase text-[#0d0d10] bg-[#D4AF37]/90 px-3 py-1.5">${escapeHtml(season)}</span>` : ""}
       </div>
       <div class="p-5">
-        <h3 class="font-heading text-lg font-bold tracking-wide text-[#F5F2EB]">${escapeHtml(name)}</h3>
-        ${reignBits.length ? `<div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">${reignBits.map((b) => `<span>${b}</span>`).join("")}</div>` : ""}
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="font-heading text-lg font-bold tracking-wide text-[#F5F2EB]">${nameHtml}</h3>
+        </div>
+        ${date || uid ? `<div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">${date ? `<span>${escapeHtml(date)}</span>` : ""}${uid && /^\\d+$/.test(uid) ? `<span><a href="/users/${uid}" class="hover:text-[#D4AF37] transition-colors">Profile →</a></span>` : ""}</div>` : ""}
         <div class="hof-stats flex items-center gap-4 mt-3"></div>
-        ${e.quote ? `<p class="text-[#A1A1AA] text-sm leading-relaxed mt-4 italic">“${escapeHtml(e.quote)}”</p>` : ""}
+        ${quote ? `
+        <blockquote class="hof-quote mt-4 border-l-2 border-[#D4AF37]/50 pl-4 py-1">
+          <p class="font-kanji text-xs text-[#D4AF37]/70 mb-1">言葉 — Words from the Tenno</p>
+          <p class="text-[#F5F2EB] text-sm leading-relaxed italic">「${escapeHtml(quote)}」</p>
+        </blockquote>` : ""}
       </div>
     </article>
   `;
