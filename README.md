@@ -32,7 +32,8 @@ A dark, feudal-Japan themed CTFd theme with splash intro, Japanese kanji rank hi
 6. [Features](#features)
 7. [Hierarchy Ranking System](#hierarchy-ranking-system)
 8. [Admin Cheat Sheet](#admin-cheat-sheet)
-9. [Troubleshooting](#troubleshooting)
+9. [Hall of Fame Setup](#hall-of-fame-setup)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -223,6 +224,7 @@ docker exec ctfd-cache-1 redis-cli FLUSHALL   # CTFd caches the manifest in Redi
 | Auth | `/login`, `/register`, `/reset_password`, `/confirm` | RONIN-styled forms |
 | Errors | `403/404/429/500/502` | Themed error pages in `templates/errors/` |
 | Notifications | `/notifications` | Announcement feed |
+| Hall of Fame | `/hall-of-fame` | **Live Reigning Tenno** (from scoreboard API) + admin-curated **Past Emperors** gallery with portraits, reign eras, and stats |
 
 ### CDN dependencies (require internet at runtime)
 
@@ -266,6 +268,52 @@ Challenge editor fields that surface in the player modal:
 | **Connection Info** | Cyan 接続 box; URLs auto-linked |
 | **Author / attribution** | Gold 匠 "Crafted by" line |
 | **Tags** | `author=Name` → fallback author display; `link=https://…` → red link chips |
+
+---
+
+## Hall of Fame Setup
+
+The `/hall-of-fame` page honors every warrior who has held the **Tenno (天皇)** crown — the reigning #1.
+
+### One-time setup
+
+1. In the CTFd Admin Panel go to **Admin → Pages → New Page**.
+2. Set **Title**: `Hall of Fame`, **Route**: `hall-of-fame`, **Content** format: **HTML**.
+3. (Optional) Check **Show in navbar** — though the theme already renders its own 殿堂 nav link.
+4. Save. The page now renders in the RONIN Hall of Emperors layout.
+
+### What renders automatically
+
+- **Reigning Tenno section** — always live from `/api/v1/scoreboard/top/1`. The current #1 warrior appears with score and a profile link. No maintenance needed.
+- **Past Emperors section** — built from the page content you write (below).
+
+### Adding an emperor to the hall
+
+In the page editor (HTML mode), add one block per past Tenno:
+
+```html
+<article class="tenno-inductee"
+         data-user-id="4"
+         data-name="Kurosawa_7"
+         data-season="Season 1 — Red Moon"
+         data-date="2026-08-15"
+         data-img="https://example.com/portrait.jpg"
+         data-current="true">
+  The blade that silenced the server room.
+</article>
+```
+
+| Attribute | Required | Effect |
+|-----------|----------|--------|
+| `data-user-id` | optional | Fetches **live score/rank** from `/api/v1/users/<id>` and links the card to their profile |
+| `data-name` | recommended | Display name (falls back to the CTFd name if `data-user-id` is set) |
+| `data-season` | optional | Reign era label, e.g. `Season of the Red Moon` |
+| `data-date` | optional | Date they held the crown |
+| `data-img` | optional | Portrait image URL — omit to show the 皇 crest placeholder |
+| `data-current="true"` | optional | Gold **Reigning** badge + glowing card |
+| inner text | optional | Quote / bio shown in italics |
+
+> **Tip:** when a new warrior takes the throne, set `data-current="true"` on their card and remove it from the previous holder. The reigning spotlight above the gallery is always computed live, so the badge is purely visual.
 
 ---
 

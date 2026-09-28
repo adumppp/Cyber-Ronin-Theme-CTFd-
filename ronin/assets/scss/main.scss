@@ -317,3 +317,63 @@ input:focus, textarea:focus, select:focus {
   background: rgba(230,57,70,0.1) !important;
   color: #F5F2EB !important;
 }
+
+/* ============================== HALL OF FAME ============================== */
+.hof-throne {
+  position: relative;
+}
+.hof-throne::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 90% at 50% 0%, rgba(212, 175, 55, 0.08), transparent 70%);
+  pointer-events: none;
+}
+.hof-watermark {
+  color: rgba(212, 175, 55, 0.05);
+}
+.hof-card {
+  background: #121215;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.hof-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 16px 32px -12px rgba(212, 175, 55, 0.25);
+  background-color: #141418;
+}
+.hof-card-reigning {
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 40px -8px rgba(212, 175, 55, 0.35);
+}
+.hof-card-reigning:hover {
+  box-shadow: 0 0 56px -8px rgba(212, 175, 55, 0.5);
+}
+.hof-portrait {
+  filter: grayscale(0.35) contrast(1.1);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+.hof-card:hover .hof-portrait {
+  filter: grayscale(0) contrast(1.05);
+  transform: scale(1.03);
+}
+.hof-seal {
+  color: #d4af37;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
+}
+@keyframes hof-crest-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 22px rgba(212, 175, 55, 0.9));
+  }
+}
+.hof-crest {
+  animation: hof-crest-pulse 2.6s ease-in-out infinite;
+}

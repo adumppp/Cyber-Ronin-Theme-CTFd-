@@ -3,6 +3,8 @@
 {% block content %}
 {% if request.path == '/' or request.path == '' %}
   {% include "components/landing.html" %}
+{% elif request.path == '/hall-of-fame' or request.path == '/hall-of-fame/' %}
+  {% include "components/hall_of_fame.html" %}
 {% else %}
 <main class="max-w-4xl mx-auto px-4 sm:px-8 lg:px-12 py-14 lg:py-20 min-h-screen">
   <div class="reveal">

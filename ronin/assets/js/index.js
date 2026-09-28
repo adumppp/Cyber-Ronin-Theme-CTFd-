@@ -1638,6 +1638,128 @@ async function checkUnreadNotifications() {
   } catch (e) {}
 }
 
+// ============================== HALL OF FAME ==============================
+async function initHallOfFame() {
+  renderReigningTenno();
+  initInductees();
+}
+
+async function renderReigningTenno() {
+  const body = $("#hof-reigning-body");
+  if (!body) return;
+  try {
+    const resp = await fetch("/api/v1/scoreboard/top/1");
+    const data = await resp.json();
+    if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      const t = data.data[0];
+      const uid = t.account_id || t.account_url;
+      const link = uid ? (typeof uid === "number" ? `/users/${uid}` : uid) : "#";
+      body.innerHTML = `
+        <a href="${link}" class="inline-block group">
+          <h3 class="font-heading text-3xl sm:text-4xl font-black text-[#D4AF37] group-hover:text-[#FFD966] transition-colors">${escapeHtml(t.name || "Unknown")}</h3>
+        </a>
+        <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-4">
+          <span class="font-heading text-xl font-black text-[#F5F2EB]">${(t.score || 0).toLocaleString()}<span class="text-xs text-[#D4AF37]/70 ml-1.5">PTS</span></span>
+          <span class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]"> wearer of the crown</span>
+        </div>
+        ${uid ? `<a href="${link}" class="inline-flex mt-5 font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] hover:text-[#D4AF37] transition-colors">View Warrior →</a>` : ""}
+      `;
+    } else {
+      body.innerHTML = `
+        <p class="font-kanji text-3xl text-[#D4AF37]/30">皇空</p>
+        <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] mt-3">The throne stands empty — claim it on the honor scroll.</p>`;
+    }
+  } catch (e) {
+    body.innerHTML = `<p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A]">The ledger is silent — scoreboard unavailable.</p>`;
+  }
+}
+
+function initInductees() {
+  const source = $("#hof-source");
+  const grid = $("#hof-grid");
+  if (!grid) return;
+  const raw = source ? Array.from(source.querySelectorAll(".tenno-inductee")) : [];
+
+  if (raw.length === 0) {
+    const empty = $("#hof-empty");
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+
+  const entries = raw.map((el, idx) => ({
+    idx,
+    name: el.dataset.name || "",
+    uid: (el.dataset.userId || "").trim(),
+    season: el.dataset.season || "",
+    date: el.dataset.date || "",
+    img: el.dataset.img || "",
+    current: (el.dataset.current || "").toLowerCase() === "true",
+    quote: (el.textContent || "").trim(),
+    score: null,
+    solves: null,
+  }));
+
+  grid.innerHTML = entries.map((e) => hofCardHtml(e)).join("");
+
+  // Enrich cards with live stats for entries linked to a CTFd user
+  entries.forEach((e, i) => {
+    if (!e.uid || !/^\d+$/.test(e.uid)) return;
+    fetch(`/api/v1/users/${e.uid}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.success) return;
+        const u = data.data;
+        const card = grid.querySelector(`article[data-idx="${e.idx}"]`);
+        if (!card) return;
+        const statsRow = card.querySelector(".hof-stats");
+        if (statsRow && u.score !== undefined && u.score !== null) {
+          statsRow.innerHTML = `
+            <span class="font-heading text-lg font-black text-[#D4AF37]">${Number(u.score).toLocaleString()}<span class="text-[10px] text-[#D4AF37]/70 ml-1">PTS</span></span>
+            ${u.place ? `<span class="font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">Now #${u.place}</span>` : ""}
+          `;
+        }
+        if (u.name) {
+          const nameEl = card.querySelector(".hof-name");
+          if (nameEl && !e.name) nameEl.textContent = u.name;
+        }
+      })
+      .catch(() => {});
+  });
+
+  initReveal();
+}
+
+function hofCardHtml(e) {
+  const name = e.name || "Name Unknown";
+  const portrait = e.img
+    ? `<img src="${escapeHtml(e.img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-56 object-cover" loading="lazy">`
+    : `<div class="hof-portrait w-full h-56 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-6xl text-[#D4AF37]/50">皇</span></div>`;
+
+  const reignBits = [];
+  if (e.season) reignBits.push(`<span>${escapeHtml(e.season)}</span>`);
+  if (e.date) reignBits.push(`<span>${escapeHtml(e.date)}</span>`);
+
+  const nameHtml = e.uid && /^\d+$/.test(e.uid)
+    ? `<a href="/users/${e.uid}" class="font-heading text-lg font-bold text-[#F5F2EB] tracking-wide hover:text-[#D4AF37] transition-colors">${escapeHtml(name)}</a>`
+    : `<span class="font-heading text-lg font-bold text-[#F5F2EB] tracking-wide">${escapeHtml(name)}</span>`;
+
+  return `
+    <article class="hof-card reveal ${e.current ? "hof-card-reigning" : ""}" data-idx="${e.idx}" style="transition-delay:${Math.min((e.idx || 0) * 0.06, 0.3)}s">
+      <div class="relative overflow-hidden">
+        ${e.img ? `<img src="${escapeHtml(e.img)}" alt="${escapeHtml(name)}" class="hof-portrait w-full h-56 object-cover" loading="lazy">` : `<div class="hof-portrait w-full h-56 flex items-center justify-center bg-gradient-to-br from-[#1a1206] to-[#0d0d10]"><span class="font-kanji text-6xl text-[#D4AF37]/50">皇</span></div>`}
+        <span class="absolute top-3 left-3 font-kanji text-2xl hof-seal">天皇</span>
+        ${e.current ? '<span class="absolute top-3 right-3 font-mono2 text-[9px] tracking-[0.25em] uppercase bg-[#D4AF37] text-black px-2 py-1">Reigning</span>' : ""}
+      </div>
+      <div class="p-5">
+        <h3 class="font-heading text-lg font-bold tracking-wide text-[#F5F2EB]">${escapeHtml(name)}</h3>
+        ${reignBits.length ? `<div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 font-mono2 text-[10px] tracking-[0.25em] uppercase text-[#71717A]">${reignBits.map((b) => `<span>${b}</span>`).join("")}</div>` : ""}
+        <div class="hof-stats flex items-center gap-4 mt-3"></div>
+        ${e.quote ? `<p class="text-[#A1A1AA] text-sm leading-relaxed mt-4 italic">“${escapeHtml(e.quote)}”</p>` : ""}
+      </div>
+    </article>
+  `;
+}
+
 // ============================== PAGE ROUTING ==============================
 function initPage() {
   const path = window.location.pathname;
@@ -1656,6 +1778,8 @@ function initPage() {
     loadScoreboard();
   } else if (path === "/user" || path.startsWith("/users/")) {
     loadProfile();
+  } else if (path === "/hall-of-fame" || path === "/hall-of-fame/") {
+    initHallOfFame();
   }
 }
 

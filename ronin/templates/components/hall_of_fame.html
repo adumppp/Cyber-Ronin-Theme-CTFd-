@@ -1,0 +1,46 @@
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 spotlight pointer-events-none"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-14 lg:pt-20 pb-10 text-center">
+    <div class="reveal">
+      <span class="font-kanji text-7xl sm:text-8xl text-[#D4AF37] block torch-pulse mb-4">天皇</span>
+      <p class="font-kanji text-xs text-[#E63946] tracking-[0.5em] mb-3">殿堂 — HALL OF FAME</p>
+      <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-[#F5F2EB]">Hall of Emperors</h1>
+      <p class="mt-4 text-[#A1A1AA] text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+        Only one may wear the crown at a time — but every Tenno leaves a permanent mark upon this hall. Those who reached the throne of the ledger are honored here, eternal and unforged.
+      </p>
+      <div class="brush-divider mt-8 w-1/2 mx-auto"></div>
+    </div>
+  </div>
+</section>
+
+<section class="relative max-w-4xl mx-auto px-4 sm:px-8 pb-6">
+  <div id="hof-reigning" class="reveal">
+    <div class="hof-throne relative bg-[#121215] border border-[rgba(212,175,55,0.5)] p-8 sm:p-10 text-center overflow-hidden shadow-[0_0_60px_-12px_rgba(212,175,55,0.35)]">
+      <span class="hof-watermark absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-kanji text-[10rem] sm:text-[12rem] leading-none select-none pointer-events-none opacity-[0.04]">天皇</span>
+      <p class="font-kanji text-xs text-[#D4AF37] tracking-[0.5em] uppercase">現在の天皇 — Reigning Tenno</p>
+      <div id="hof-reigning-body" class="mt-6">
+        <div class="font-mono2 text-[10px] tracking-[0.35em] uppercase text-[#71717A] animate-pulse">Consulting the ledger…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pb-20">
+  <div class="reveal">
+    <h2 class="font-heading text-2xl sm:text-3xl font-bold uppercase tracking-wide text-[#F5F2EB] flex items-center gap-4">
+      <span class="font-kanji text-2xl text-[#D4AF37]">歴代</span> Past Emperors
+    </h2>
+    <p class="font-mono2 text-[10px] tracking-[0.3em] uppercase text-[#71717A] mt-2">Warriors who once held the Tenno seat</p>
+    <div class="brush-divider mt-6 w-1/3"></div>
+  </div>
+
+  <div id="hof-grid" class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+  <div id="hof-empty" class="hidden mt-16 text-center">
+    <p class="font-kanji text-5xl text-[#D4AF37]/20">皇座</p>
+    <p class="font-heading text-lg text-[#A1A1AA] mt-4">The throne has not yet changed hands.</p>
+    <p class="font-mono2 text-[10px] tracking-[0.3em] text-[#71717A] uppercase mt-2">The first emperor will be recorded here — forever.</p>
+  </div>
+
+  <div id="hof-source" class="hidden">{{ content | safe }}</div>
+</section>

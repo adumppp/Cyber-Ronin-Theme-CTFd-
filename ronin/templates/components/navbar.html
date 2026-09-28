@@ -22,6 +22,13 @@
     </a>
     {% endif %}
 
+    <!-- Hall of Fame -->
+    <a href="{{ url_for('views.static_html', route='hall-of-fame') }}" class="relative px-4 py-2 group">
+      <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase {% if request.path == '/hall-of-fame' or request.path == '/hall-of-fame/' %}text-[#D4AF37]{% else %}text-[#71717A] group-hover:text-[#A1A1AA]{% endif %} transition-colors duration-300">Hall of Fame</span>
+      <span class="absolute -top-1 right-1 font-kanji text-[9px] {% if request.path == '/hall-of-fame' or request.path == '/hall-of-fame/' %}text-[#D4AF37]{% else %}text-[#71717A]/40{% endif %} transition-colors duration-300">殿堂</span>
+      {% if request.path == '/hall-of-fame' or request.path == '/hall-of-fame/' %}<span class="absolute bottom-0 left-3 right-3 h-px bg-[#D4AF37]"></span>{% endif %}
+    </a>
+
     {% if Configs.user_mode == "teams" and Configs.team_visibility != "admins" %}
     <a href="{{ url_for('teams.listing') }}" class="relative px-4 py-2 group">
       <span class="font-mono2 text-[11px] tracking-[0.2em] uppercase {% if request.endpoint == 'teams.listing' %}text-[#F5F2EB]{% else %}text-[#71717A] group-hover:text-[#A1A1AA]{% endif %} transition-colors duration-300">Clans</span>
@@ -103,6 +110,7 @@
     {% if Configs.score_visibility != "admins" or is_admin() %}
     <a href="{{ url_for('scoreboard.listing') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Honor Scroll</span><span class="font-kanji text-sm text-[#E63946]">番付</span></a>
     {% endif %}
+    <a href="{{ url_for('views.static_html', route='hall-of-fame') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 {% if request.path == '/hall-of-fame' or request.path == '/hall-of-fame/' %}text-[#D4AF37] border-[#D4AF37]/40{% else %}text-[#71717A]{% endif %}"><span>Hall of Fame</span><span class="font-kanji text-sm text-[#D4AF37]">殿堂</span></a>
     {% if Configs.user_mode == "teams" and Configs.team_visibility != "admins" %}
     <a href="{{ url_for('teams.listing') }}" class="flex items-center justify-between px-4 py-3 font-mono2 text-xs uppercase tracking-widest border border-white/5 text-[#71717A]"><span>Clans</span><span class="font-kanji text-sm text-[#E63946]">一族</span></a>
     {% endif %}
