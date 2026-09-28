@@ -131,15 +131,18 @@ Open `http://localhost:8000`, complete the CTFd setup wizard, then activate the 
 
 ## Deploying into an Existing CTFd Instance
 
+> The repo ships **two** parts: `ronin/` (the theme) and `plugin/hall_of_fame/` (the Hall of Fame registry plugin). The theme works alone, but `/hall-of-fame` and its admin registry need the plugin — see [Hall of Fame Setup](#hall-of-fame-setup).
+
 ### Option A — Host volume mount (recommended for Docker setups)
 
-1. Copy the theme into your CTFd deployment's theme directory:
+1. Copy the theme **and plugin** into your CTFd deployment:
 
    ```bash
    # On your CTFd host
    cp -r ronin-theme/ronin /opt/CTFd/CTFd/themes/ronin
-   # — or, if your docker-compose mounts the repo: place it in
-   # /home/<user>/CTFd/CTFd/themes/ronin
+   cp -r ronin-theme/plugin/hall_of_fame /opt/CTFd/CTFd/plugins/
+   # — or, if your docker-compose mounts the repo: place them in
+   # /home/<user>/CTFd/CTFd/themes/ronin and /home/<user>/CTFd/CTFd/plugins/hall_of_fame
    ```
 
 2. **Critical:** CTFd reads `static/manifest.json` (NOT `.vite/manifest.json`). The theme ships both, but if you rebuild assets you must re-copy:
@@ -159,7 +162,8 @@ Open `http://localhost:8000`, complete the CTFd setup wizard, then activate the 
 
 ```bash
 docker cp ronin-theme/ronin ctfd-ctfd-1:/opt/CTFd/CTFd/themes/ronin
-docker exec ctfd-ctfd-1 chown -R 1000:1000 /opt/CTFd/CTFd/themes/ronin
+docker cp ronin-theme/plugin/hall_of_fame ctfd-ctfd-1:/opt/CTFd/CTFd/plugins/
+docker exec ctfd-ctfd-1 chown -R 1000:1000 /opt/CTFd/CTFd/themes/ronin /opt/CTFd/CTFd/plugins/hall_of_fame
 docker compose restart ctfd
 docker exec ctfd-cache-1 redis-cli FLUSHALL
 ```
@@ -224,7 +228,7 @@ docker exec ctfd-cache-1 redis-cli FLUSHALL   # CTFd caches the manifest in Redi
 | Auth | `/login`, `/register`, `/reset_password`, `/confirm` | RONIN-styled forms |
 | Errors | `403/404/429/500/502` | Themed error pages in `templates/errors/` |
 | Notifications | `/notifications` | Announcement feed |
-| Hall of Fame | `/hall-of-fame` | **Live Reigning Tenno** (from scoreboard API) + admin-curated **Past Emperors** gallery with portraits, reign eras, and stats |
+| Hall of Fame | `/hall-of-fame` | **Reigning Tenno** spotlight (registry-designated or live scoreboard) + **Past Emperors** gallery, rank ladder (農民→侍→大名→将軍→天皇), election explainer |
 
 ### CDN dependencies (require internet at runtime)
 
@@ -273,47 +277,61 @@ Challenge editor fields that surface in the player modal:
 
 ## Hall of Fame Setup
 
-The `/hall-of-fame` page honors every warrior who has held the **Tenno (天皇)** crown — the reigning #1.
+The `/hall-of-fame` page honors every warrior who has held the **Tenno (天皇)** crown — the reigning #1 on the honor scroll. It is powered by the **hall_of_fame CTFd plugin** bundled in this repo under `plugin/hall_of_fame/`, so managing inductees is a form in the admin panel — no HTML editing.
 
-### One-time setup
+### Part 1 — Install the plugin (required)
 
-1. In the CTFd Admin Panel go to **Admin → Pages → New Page**.
-2. Set **Title**: `Hall of Fame`, **Route**: `hall-of-fame`, **Content** format: **HTML**.
-3. (Optional) Check **Show in navbar** — though the theme already renders its own 殿堂 nav link.
-4. Save. The page now renders in the RONIN Hall of Emperors layout.
+The theme renders the page; the **plugin** provides the admin registry, the data API, and the `/hall-of-fame` route itself. Without it the page 404s.
 
-### What renders automatically
+```bash
+git clone https://github.com/adumppp/Cyber-Ronin-Theme-CTFd-.git /tmp/ronin-repo
 
-- **Reigning Tenno section** — always live from `/api/v1/scoreboard/top/1`. The current #1 warrior appears with score and a profile link. No maintenance needed.
-- **Past Emperors section** — built from the page content you write (below).
+# Copy BOTH pieces into your CTFd checkout
+sudo cp -r /tmp/ronin-repo/ronin                /path/to/CTFd/CTFd/themes/ronin
+sudo cp -r /tmp/ronin-repo/plugin/hall_of_fame  /path/to/CTFd/CTFd/plugins/
 
-### Adding an emperor to the hall
+# Manifest sync (theme) — CTFd reads static/manifest.json, not .vite/
+sudo cp /path/to/CTFd/CTFd/themes/ronin/static/.vite/manifest.json \
+        /path/to/CTFd/CTFd/themes/ronin/static/manifest.json
 
-In the page editor (HTML mode), add one block per past Tenno:
-
-```html
-<article class="tenno-inductee"
-         data-user-id="4"
-         data-name="Kurosawa_7"
-         data-season="Season 1 — Red Moon"
-         data-date="2026-08-15"
-         data-img="https://example.com/portrait.jpg"
-         data-current="true">
-  The blade that silenced the server room.
-</article>
+# Restart + flush cache
+sudo docker compose restart ctfd
+sudo docker exec ctfd-cache-1 redis-cli FLUSHALL
 ```
 
-| Attribute | Required | Effect |
-|-----------|----------|--------|
-| `data-user-id` | optional | Fetches **live score/rank** from `/api/v1/users/<id>` and links the card to their profile |
-| `data-name` | recommended | Display name (falls back to the CTFd name if `data-user-id` is set) |
-| `data-season` | optional | Reign era label, e.g. `Season of the Red Moon` |
-| `data-date` | optional | Date they held the crown |
-| `data-img` | optional | Portrait image URL — omit to show the 皇 crest placeholder |
-| `data-current="true"` | optional | Gold **Reigning** badge + glowing card |
-| inner text | optional | Quote / bio shown in italics |
+The plugin registers itself in the **admin top bar** as **Hall of Fame** (next to Config), linking to `/admin/hall_of_fame`.
 
-> **Tip:** when a new warrior takes the throne, set `data-current="true"` on their card and remove it from the previous holder. The reigning spotlight above the gallery is always computed live, so the badge is purely visual.
+### Part 2 — The public page
+
+Visiting `/hall-of-fame` renders the Hall of Emperors:
+
+1. **Reigning Tenno spotlight** — the inductee currently ticked as *Reigning* in the registry, rendered as a full testimonial card with their **live score/rank** pulled from CTFd. If nobody is designated, it falls back to the live scoreboard #1.
+2. **The Path to the Throne** — the rank ladder (農民 Peasant → 侍 Samurai → 大名 Daimyo → 将軍 Shogun → 天皇 Tenno) with mastery tiers, plus the election rules: mastery = (honor earned ÷ total honor available) × 100, and rank #1 wears the crown.
+3. **Past Emperors** — full-width testimonial rows (portrait left, info right): every former holder. The reigning Tenno is automatically excluded from this gallery.
+
+### Part 3 — Induct a Tenno
+
+1. Log in as admin → **Hall of Fame** in the admin top bar (or `/admin/hall_of_fame`).
+2. Fill the form — only the **Warrior Name** is required:
+   - **CTFd User ID** — links the card to their profile and shows their live score
+   - **Age** (齢) — displayed as a fact chip
+   - **Batch** (期) — years joined until graduation, e.g. `2021 – 2025` or `Class of 2025`
+   - **Portrait** — paste an image URL **or upload a file** (upload wins; stored via CTFd's own uploads pipeline)
+   - **Words from the Tenno** — their quote, rendered as a gold-marked testimonial
+   - **Reigning** — tick for the current holder; tick the next one when the crown changes hands and the old holder moves to Past Emperors automatically
+3. Click **Induct**. The page updates instantly — no rebuild, no restart.
+
+### Updating each season
+
+When a new warrior takes #1:
+
+1. Open the registry and click **Edit** on the outgoing Tenno → untick **Reigning** → Save. They now appear in Past Emperors.
+2. **Induct** the new holder with their details → tick **Reigning** → Save.
+3. Done — the throne and the gallery update themselves.
+
+### CMS-page fallback (optional)
+
+The theme still supports the old approach: create a CMS page with route `hall-of-fame` and embed `<article class="tenno-inductee" data-name="…" data-user-id="…" data-img="…">quote</article>` blocks. The theme parses these only when the plugin API returns no inductees — the plugin is the recommended path.
 
 ---
 
