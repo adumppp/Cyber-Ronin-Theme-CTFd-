@@ -1605,15 +1605,58 @@ function initLiveEvents() {
   }
 }
 
-function incrementNotificationBadge() {
+// ============================== NOTIFICATION READ STATE ==============================
+// CTFd has no server-side read/unread for notifications, so the theme tracks
+// seen whisper IDs in localStorage. The badge only counts whispers the user
+// hasn't seen; opening /notifications marks everything as read.
+const WHISPER_SEEN_KEY = "ronin-whispers-seen";
+
+function getSeenWhispers() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(WHISPER_SEEN_KEY) || "[]");
+    return Array.isArray(raw) ? raw : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function markAllWhispersSeen(notifications) {
+  try {
+    // Keep the newest 200 keys only (defensive cap for localStorage size);
+    // order-independent so it doesn't matter how the API sorts its response.
+    const keys = notifications
+      .slice()
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+      .slice(0, 200)
+      .map(whisperKey);
+    localStorage.setItem(WHISPER_SEEN_KEY, JSON.stringify(keys));
+  } catch (e) {}
+}
+
+function setNotificationBadge(count) {
   const badge = $("#notification-badge");
   const mobileBadge = $("#mobile-notification-badge");
   [badge, mobileBadge].forEach((b) => {
     if (!b) return;
-    const current = parseInt(b.textContent.trim(), 10) || 0;
-    b.textContent = current + 1;
-    b.classList.remove("hidden");
+    if (count > 0) {
+      b.textContent = count > 99 ? "99+" : count;
+      b.classList.remove("hidden");
+    } else {
+      b.textContent = "0";
+      b.classList.add("hidden");
+    }
   });
+}
+
+function incrementNotificationBadge() {
+  const badge = $("#notification-badge");
+  if (!badge) return;
+  const current = parseInt(badge.textContent, 10) || 0;
+  setNotificationBadge(current + 1);
+}
+
+function whisperKey(n) {
+  return `${n.id || ""}|${n.title || ""}|${n.date || ""}`;
 }
 
 async function checkUnreadNotifications() {
@@ -1621,19 +1664,27 @@ async function checkUnreadNotifications() {
   const mobileBadge = $("#mobile-notification-badge");
   if (!badge && !mobileBadge) return;
 
+  // On the Whispers page itself: mark everything currently listed as seen.
+  if (window.location.pathname === "/notifications") {
+    try {
+      const resp = await fetch("/api/v1/notifications");
+      const data = await resp.json();
+      if (data.success && Array.isArray(data.data)) {
+        markAllWhispersSeen(data.data);
+      }
+    } catch (e) {}
+    setNotificationBadge(0);
+    return;
+  }
+
   try {
     const resp = await fetch("/api/v1/notifications");
     const data = await resp.json();
     if (data.success && Array.isArray(data.data)) {
-      const count = data.data.length;
-      if (count > 0) {
-        [badge, mobileBadge].forEach((b) => {
-          if (b) {
-            b.textContent = count;
-            b.classList.remove("hidden");
-          }
-        });
-      }
+      const seen = getSeenWhispers();
+      const seenSet = new Set(seen);
+      const unread = data.data.filter((n) => !seenSet.has(whisperKey(n)));
+      setNotificationBadge(unread.length);
     }
   } catch (e) {}
 }
