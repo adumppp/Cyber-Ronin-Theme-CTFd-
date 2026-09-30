@@ -366,6 +366,7 @@ async function loadChallenges() {
     const resp = await fetch("/api/v1/challenges");
     const data = await resp.json();
     if (data.success) {
+      if (!Array.isArray(data.data)) throw new Error("unexpected API shape");
       challengesData = data.data.map((c) => ({
         id: c.id,
         title: c.name,
@@ -383,7 +384,16 @@ async function loadChallenges() {
       checkUrlHashForChallenge();
     }
   } catch (e) {
-    console.error("Failed to load challenges:", e);
+    console.error("[RONIN] Failed to load challenges:", e);
+    const grid = $("#challenges-grid");
+    if (grid && !grid.children.length) {
+      grid.innerHTML = `
+        <div class="md:col-span-2 lg:col-span-3 text-center py-16">
+          <p class="font-kanji text-4xl text-[#71717A]/40">落</p>
+          <p class="font-mono2 text-xs tracking-widest text-[#E63946] mt-4 uppercase">The trials could not be summoned</p>
+          <button onclick="location.reload()" class="font-mono2 text-[10px] tracking-[0.2em] uppercase mt-6 px-4 py-2 border border-[#E63946]/60 text-[#E63946] hover:bg-[#E63946]/10 transition-colors">重 Load again</button>
+        </div>`;
+    }
     showToast("Failed to load trials", "error");
   }
 }
@@ -1935,24 +1945,28 @@ function hofCardHtml(e) {
 
 // ============================== PAGE ROUTING ==============================
 function initPage() {
-  const path = window.location.pathname;
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
 
   initReveal();
   initMobileNav();
   initLiveEvents();
   checkUnreadNotifications();
 
-  if (path === "/" || path === "") {
-    initLanding();
-  } else if (path === "/challenges") {
-    loadChallenges();
-    initChallengeFilters();
-  } else if (path === "/scoreboard") {
-    loadScoreboard();
-  } else if (path === "/user" || path.startsWith("/users/")) {
-    loadProfile();
-  } else if (path === "/hall-of-fame" || path === "/hall-of-fame/") {
-    initHallOfFame();
+  try {
+    if (path === "/" || path === "") {
+      initLanding();
+    } else if (path === "/challenges") {
+      loadChallenges();
+      initChallengeFilters();
+    } else if (path === "/scoreboard") {
+      loadScoreboard();
+    } else if (path === "/user" || path.startsWith("/users/")) {
+      loadProfile();
+    } else if (path === "/hall-of-fame") {
+      initHallOfFame();
+    }
+  } catch (e) {
+    console.error("[RONIN] page init failed:", e);
   }
 }
 
@@ -1964,23 +1978,33 @@ function initChallengeFilters() {
 }
 
 // ============================== INIT ==============================
-document.addEventListener("DOMContentLoaded", () => {
-  const splash = $("#splash-intro");
-  const alreadyEntered = sessionStorage.getItem("ronin-entered");
-  
-  if (splash && !alreadyEntered) {
-    initSplashIntro();
-  } else if (splash) {
-    splash.style.display = "none";
-    document.body.classList.add("entered");
-    initPage();
-  } else {
-    initPage();
+function bootRonin() {
+  try {
+    const splash = $("#splash-intro");
+    const alreadyEntered = sessionStorage.getItem("ronin-entered");
+
+    if (splash && !alreadyEntered) {
+      initSplashIntro();
+    } else if (splash) {
+      splash.style.display = "none";
+      document.body.classList.add("entered");
+      initPage();
+    } else {
+      initPage();
+    }
+  } catch (e) {
+    console.error("[RONIN] boot failed:", e);
   }
-});
+}
+
+document.addEventListener("DOMContentLoaded", bootRonin);
 
 window.addEventListener("popstate", () => {
-  initPage();
+  try {
+    initPage();
+  } catch (e) {
+    console.error("[RONIN] popstate init failed:", e);
+  }
 });
 
 // Expose functions globally for inline onclick handlers

@@ -147,6 +147,8 @@
   </footer>
 
   {% block scripts %}
+    {# v= tag busts browser/CDN caches whenever the manifest changes —
+       prevents stale 404s after a deploy (the "dead splash / empty trials" bug) #}
     {{ Assets.js("assets/js/index.js", type=None, defer=True) }}
   {% endblock %}
 
