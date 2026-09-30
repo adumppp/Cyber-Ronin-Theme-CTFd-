@@ -143,8 +143,31 @@ def public_page():
     return render_template("page.html", title="Hall of Fame", content="")
 
 
+def _ensure_index_page():
+    """CTFd serves / via the CMS page with route='index'. Deleting that page
+    in Admin -> Pages makes the homepage 404 (a classic footgun), so silently
+    recreate it on startup if it is missing. Idempotent — does nothing when
+    the page exists."""
+    try:
+        from CTFd.models import Pages, db
+
+        if Pages.query.filter_by(route="index").first() is None:
+            title = get_config("ctf_name") or "Home"
+            db.session.add(
+                Pages(title=title, route="index", content="", draft=False)
+            )
+            db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+
 def load(app):
     from CTFd.plugins import register_admin_plugin_menu_bar
+
+    _ensure_index_page()
 
     # The admin navbar template builds the final URL itself:
     # script_root + "/" + route. Registering "admin/hall_of_fame" produced
